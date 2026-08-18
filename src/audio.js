@@ -7,7 +7,31 @@ let windGain = null;
 let windSource = null;
 let noiseBuffer = null;
 let unlocked = false;
+let htmlUnlocked = false;
 let muted = storage.getMuted();
+
+// A ~0-length silent WAV. iOS Safari's audio-session handling treats a
+// played HTMLMediaElement differently from a raw Web Audio oscillator, and
+// some iOS versions only fully commit to allowing Web Audio playback after
+// an <audio>/<video> element has also been played from a real user gesture.
+// This is a standard belt-and-suspenders unlock alongside the AudioContext
+// one below.
+const SILENT_WAV =
+  "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=";
+
+function unlockHtmlAudio() {
+  if (htmlUnlocked) return;
+  htmlUnlocked = true;
+  try {
+    const el = new Audio(SILENT_WAV);
+    el.volume = 0.01;
+    el.playsInline = true;
+    const p = el.play();
+    if (p && typeof p.catch === "function") p.catch(() => {});
+  } catch (e) {
+    /* ignore */
+  }
+}
 
 function ensureContext() {
   if (ctx) return ctx;
@@ -30,6 +54,7 @@ function buildNoiseBuffer(c) {
 }
 
 export function initAudio() {
+  unlockHtmlAudio();
   const c = ensureContext();
   if (!c) return;
   if (c.state === "suspended") {
