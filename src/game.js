@@ -128,6 +128,18 @@ export function createGame(canvas, stageEl) {
     shake = { t: dur, dur, mag };
   }
 
+  function goHome() {
+    if (state === "start") return;
+    state = "start";
+    input.setEnabled(false);
+    audio.stopWind();
+    fullReset();
+    kurt.y = worldH * 0.42;
+    idleTapTimer = rand(0.6, 1.2);
+    ui.hideGameOver();
+    refreshStartScreen();
+  }
+
   function endGame() {
     if (state !== "playing") return;
     state = "gameover";
@@ -387,6 +399,9 @@ export function createGame(canvas, stageEl) {
       onRestart: () => {
         beginPlay();
       },
+      onHome: () => {
+        goHome();
+      },
       onToggleMute: () => {
         const m = !audio.isMuted();
         audio.setMuted(m);
@@ -401,8 +416,12 @@ export function createGame(canvas, stageEl) {
     window.addEventListener("resize", resize);
     window.addEventListener("orientationchange", resize);
     document.addEventListener("visibilitychange", () => {
-      if (document.hidden) pauseLoop();
-      else resumeLoop();
+      if (document.hidden) {
+        pauseLoop();
+      } else {
+        resumeLoop();
+        audio.initAudio();
+      }
     });
 
     start();

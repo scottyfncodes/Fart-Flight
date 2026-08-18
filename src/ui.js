@@ -20,6 +20,7 @@ export function initUI(handlers) {
   els.hud = document.getElementById("hud");
   els.btnStart = document.getElementById("btn-start");
   els.btnRestart = document.getElementById("btn-restart");
+  els.btnHome = document.getElementById("btn-home");
   els.btnMute = document.getElementById("btn-mute");
   els.cosmeticRow = document.getElementById("cosmetic-row");
   els.metaBest = document.getElementById("meta-best");
@@ -54,6 +55,10 @@ export function initUI(handlers) {
   els.btnRestart.addEventListener("click", (e) => {
     e.preventDefault();
     handlers.onRestart();
+  });
+  els.btnHome.addEventListener("click", (e) => {
+    e.preventDefault();
+    handlers.onHome();
   });
   els.btnMute.addEventListener("click", (e) => {
     e.preventDefault();
