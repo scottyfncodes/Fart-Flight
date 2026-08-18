@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#0b1220" />
+<meta name="description" content="KURT — a one-button fart-propelled arcade flight game. Tap to fart. Fly far. Keep your dignity." />
+<title>KURT</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💨</text></svg>" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="app">
+  <div id="stage">
+    <canvas id="game-canvas" aria-label="KURT game canvas"></canvas>
+
+    <div id="hud" class="hidden" aria-hidden="true">
+      <div id="hud-top">
+        <div id="hud-distance"><span id="hud-distance-val">0</span><span class="hud-unit">m</span></div>
+        <div id="hud-grade"><span id="hud-grade-code">F0</span></div>
+      </div>
+      <div id="dignity-wrap">
+        <div id="dignity-label">DIGNITY</div>
+        <div id="dignity-bar"><div id="dignity-fill"></div></div>
+      </div>
+      <div id="powerup-indicator" class="hidden">
+        <span id="powerup-name"></span>
+        <div id="powerup-bar"><div id="powerup-fill"></div></div>
+      </div>
+    </div>
+
+    <div id="grade-toast" class="hidden">
+      <div class="toast-label">NEW GRADE</div>
+      <div class="toast-code" id="toast-code">F0</div>
+      <div class="toast-name" id="toast-name">BEGINNER BREEZE</div>
+    </div>
+
+    <div id="near-miss-toast" class="hidden">DIGNITY -3</div>
+
+    <div id="start-screen" class="screen">
+      <div class="screen-inner">
+        <h1 class="title">KURT</h1>
+        <p class="subtitle">HE HAS GAS.<br />HE HAS A DREAM.</p>
+        <div id="cosmetic-row" role="list" aria-label="Kurt cosmetics"></div>
+        <button id="btn-start" class="fart-btn" type="button">FART</button>
+        <div class="meta-row">
+          <div class="meta-stat"><span class="meta-label">PERSONAL BEST</span><span id="meta-best">0m</span></div>
+          <div class="meta-stat"><span class="meta-label">GRADE</span><span id="meta-grade">F0</span></div>
+        </div>
+        <button id="btn-mute" class="icon-btn" type="button" aria-pressed="false">SOUND: ON</button>
+        <p class="howto">PRESS AND HOLD TO FART. RELEASE TO FALL.</p>
+      </div>
+    </div>
+
+    <div id="gameover-screen" class="screen hidden">
+      <div class="screen-inner">
+        <h2 class="over-title">Oh no u pooted!</h2>
+        <div id="pb-banner" class="hidden">NEW PERSONAL BEST</div>
+        <div class="stat-grid">
+          <div class="stat-cell"><span class="stat-label">DISTANCE</span><span id="stat-distance" class="stat-value">0m</span></div>
+          <div class="stat-cell"><span class="stat-label">FARTS</span><span id="stat-farts" class="stat-value">0</span></div>
+          <div class="stat-cell"><span class="stat-label">EFFICIENCY</span><span id="stat-efficiency" class="stat-value">0%</span></div>
+          <div class="stat-cell"><span class="stat-label">BEST STREAK</span><span id="stat-streak" class="stat-value">0</span></div>
+          <div class="stat-cell"><span class="stat-label">DIGNITY</span><span id="stat-dignity" class="stat-value">100%</span></div>
+          <div class="stat-cell"><span class="stat-label">GRADE</span><span id="stat-grade" class="stat-value">F0</span></div>
+        </div>
+        <p id="dignity-quip" class="hidden">There is nothing left to lose.</p>
+        <button id="btn-restart" class="fart-btn" type="button">FART AGAIN</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+<script type="module" src="src/main.js"></script>
+</body>
+</html>
