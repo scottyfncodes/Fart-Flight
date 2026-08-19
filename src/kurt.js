@@ -15,6 +15,8 @@ export function createKurt() {
     buttWigglePhase: 0,
     blinking: false,
     blinkTimer: 2.5,
+    fartExprIndex: 0,
+    fartExprTimer: 0,
     hair: createHair(),
     cosmetic: null,
   };
@@ -32,13 +34,20 @@ export function resetKurt(kurt, x, y, cosmetic) {
   kurt.buttWigglePhase = 0;
   kurt.blinking = false;
   kurt.blinkTimer = rand(1.5, 3);
+  kurt.fartExprIndex = 0;
+  kurt.fartExprTimer = 0;
   kurt.cosmetic = cosmetic;
   resetHair(kurt.hair, x + PHYSICS.kurtRadius * 0.2, y - PHYSICS.kurtRadius * 1.3);
 }
 
+const FART_EXPRESSIONS = ["surprised", "embarrassed", "laughing"];
+
 export function beginThrust(kurt) {
   kurt.thrusting = true;
   kurt.squash = 1;
+  // always start a fresh fart on the "oh no" face
+  kurt.fartExprIndex = 0;
+  kurt.fartExprTimer = rand(0.22, 0.3);
   burstHair(kurt.hair, 0, -1, 160);
 }
 
@@ -70,6 +79,11 @@ export function updateKurt(kurt, dt, gravityMult, scrollSpeed, thrustMult = 1) {
 
   if (kurt.thrusting) {
     kurt.buttWigglePhase += dt * 46;
+    kurt.fartExprTimer -= dt;
+    if (kurt.fartExprTimer <= 0) {
+      kurt.fartExprIndex = (kurt.fartExprIndex + 1) % FART_EXPRESSIONS.length;
+      kurt.fartExprTimer = rand(0.22, 0.32);
+    }
   }
 
   kurt.blinkTimer -= dt;
@@ -195,9 +209,17 @@ export function drawKurt(ctx, kurt) {
   ctx.stroke();
 
   const eyeY = -R * 0.08;
-  const silly = kurt.thrusting;
-  drawEye(ctx, R * 0.16, eyeY, R, kurt.blinking, silly);
-  drawEyebrow(ctx, R, R * 0.16, eyeY, silly);
+  const expr = kurt.thrusting ? FART_EXPRESSIONS[kurt.fartExprIndex] : "happy";
+
+  if (expr === "embarrassed") {
+    ctx.fillStyle = "rgba(230,90,90,0.4)";
+    ctx.beginPath();
+    ctx.ellipse(R * 0.02, R * 0.14, R * 0.13, R * 0.09, -0.1, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  drawEye(ctx, R * 0.16, eyeY, R, kurt.blinking, expr);
+  drawEyebrow(ctx, R, R * 0.16, eyeY, expr);
 
   ctx.fillStyle = MUSTACHE;
   ctx.beginPath();
@@ -207,7 +229,7 @@ export function drawKurt(ctx, kurt) {
   ctx.closePath();
   ctx.fill();
 
-  drawMouth(ctx, R, silly);
+  drawMouth(ctx, R, expr);
 
   drawAccessoryOnHead(ctx, R, kurt.cosmetic);
 
@@ -291,7 +313,17 @@ function drawFoot(ctx, R, cx, cy, rot) {
   ctx.stroke();
 }
 
-function drawEye(ctx, ex, ey, R, blinking, silly) {
+function drawEye(ctx, ex, ey, R, blinking, expr) {
+  if (expr === "laughing") {
+    // scrunched shut from laughing, regardless of the blink timer
+    ctx.strokeStyle = "#2b2016";
+    ctx.lineWidth = 1.8;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.arc(ex, ey + R * 0.04, R * 0.12, Math.PI * 1.15, Math.PI * 1.85);
+    ctx.stroke();
+    return;
+  }
   if (blinking) {
     ctx.strokeStyle = "#2b2016";
     ctx.lineWidth = 1.6;
@@ -302,18 +334,21 @@ function drawEye(ctx, ex, ey, R, blinking, silly) {
     ctx.stroke();
     return;
   }
-  const scale = silly ? 1.2 : 1;
+  let scale = 1;
+  if (expr === "surprised") scale = 1.45;
+  else if (expr === "embarrassed") scale = 0.55;
+  const ex2 = ex, ey2 = expr === "embarrassed" ? ey + R * 0.02 : ey;
   ctx.fillStyle = "#fff";
   ctx.beginPath();
-  ctx.ellipse(ex, ey, R * 0.13 * scale, R * 0.11 * scale, 0, 0, Math.PI * 2);
+  ctx.ellipse(ex2, ey2, R * 0.13 * scale, R * 0.11 * scale, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = "#2b2016";
   ctx.beginPath();
-  ctx.arc(ex + R * 0.02, ey + R * 0.01, R * 0.055 * scale, 0, Math.PI * 2);
+  ctx.arc(ex2 + R * 0.02, ey2 + R * 0.01, R * 0.055 * scale, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = "#fff";
   ctx.beginPath();
-  ctx.arc(ex + R * 0.045, ey - R * 0.02, R * 0.018 * scale, 0, Math.PI * 2);
+  ctx.arc(ex2 + R * 0.045, ey2 - R * 0.02, R * 0.018 * scale, 0, Math.PI * 2);
   ctx.fill();
 }
 
@@ -352,11 +387,22 @@ function drawShortHairCap(ctx, R) {
   ctx.globalAlpha = 1;
 }
 
-function drawEyebrow(ctx, R, ex, eyeY, silly) {
+function drawEyebrow(ctx, R, ex, eyeY, expr) {
   ctx.strokeStyle = "rgba(120,70,40,0.5)";
   ctx.lineWidth = 1.5;
   ctx.lineCap = "round";
-  if (silly) {
+  if (expr === "surprised") {
+    // shot up high, well clear of the eye
+    ctx.beginPath();
+    ctx.arc(ex, eyeY - R * 0.32, R * 0.13, Math.PI * 1.05, Math.PI * 1.85);
+    ctx.stroke();
+  } else if (expr === "embarrassed") {
+    // a single awkward angled line, furrowed in toward the nose
+    ctx.beginPath();
+    ctx.moveTo(ex - R * 0.15, eyeY - R * 0.1);
+    ctx.lineTo(ex + R * 0.13, eyeY - R * 0.2);
+    ctx.stroke();
+  } else if (expr === "laughing") {
     ctx.beginPath();
     ctx.arc(ex, eyeY - R * 0.22, R * 0.13, Math.PI * 1.05, Math.PI * 1.85);
     ctx.stroke();
@@ -367,11 +413,10 @@ function drawEyebrow(ctx, R, ex, eyeY, silly) {
   }
 }
 
-function drawMouth(ctx, R, silly) {
+function drawMouth(ctx, R, expr) {
   const mx = R * 0.28;
-  if (silly) {
-    // a wide, upturned open grin — reads as an excited laugh rather than
-    // the round "O" of shock
+  if (expr === "laughing") {
+    // a wide, upturned open grin — a real cackle
     ctx.fillStyle = "#7a2020";
     ctx.beginPath();
     ctx.moveTo(mx - R * 0.19, R * 0.28);
@@ -391,6 +436,24 @@ function drawMouth(ctx, R, silly) {
     ctx.quadraticCurveTo(mx, R * 0.21, mx + R * 0.19, R * 0.28);
     ctx.quadraticCurveTo(mx + R * 0.15, R * 0.44, mx, R * 0.47);
     ctx.quadraticCurveTo(mx - R * 0.15, R * 0.44, mx - R * 0.19, R * 0.28);
+    ctx.stroke();
+  } else if (expr === "surprised") {
+    // small round "oh no" mouth
+    ctx.fillStyle = "#7a2020";
+    ctx.beginPath();
+    ctx.ellipse(mx, R * 0.35, R * 0.09, R * 0.11, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = OUTLINE;
+    ctx.lineWidth = 1.3;
+    ctx.stroke();
+  } else if (expr === "embarrassed") {
+    // a small flat, awkward grimace
+    ctx.strokeStyle = "#8a5a35";
+    ctx.lineWidth = R * 0.045;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(mx - R * 0.1, R * 0.4);
+    ctx.quadraticCurveTo(mx, R * 0.37, mx + R * 0.1, R * 0.4);
     ctx.stroke();
   } else {
     ctx.strokeStyle = "#5b3a24";
