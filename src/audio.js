@@ -9,6 +9,9 @@ let noiseBuffer = null;
 let unlocked = false;
 let htmlUnlocked = false;
 let muted = storage.getMuted();
+let lastError = null;
+let initCount = 0;
+let playCount = 0;
 
 // A ~0-length silent WAV. iOS Safari's audio-session handling treats a
 // played HTMLMediaElement differently from a raw Web Audio oscillator, and
@@ -36,13 +39,37 @@ function unlockHtmlAudio() {
 function ensureContext() {
   if (ctx) return ctx;
   const AC = window.AudioContext || window.webkitAudioContext;
-  if (!AC) return null;
-  ctx = new AC();
-  masterGain = ctx.createGain();
-  masterGain.gain.value = muted ? 0 : 1;
-  masterGain.connect(ctx.destination);
-  noiseBuffer = buildNoiseBuffer(ctx);
+  if (!AC) {
+    lastError = "no AudioContext constructor on window";
+    return null;
+  }
+  try {
+    ctx = new AC();
+    masterGain = ctx.createGain();
+    masterGain.gain.value = muted ? 0 : 1;
+    masterGain.connect(ctx.destination);
+    noiseBuffer = buildNoiseBuffer(ctx);
+  } catch (e) {
+    lastError = "ensureContext: " + (e && e.message ? e.message : String(e));
+    ctx = null;
+  }
   return ctx;
+}
+
+export function getAudioDebugInfo() {
+  return {
+    hasContext: !!ctx,
+    state: ctx ? ctx.state : "none",
+    sampleRate: ctx ? ctx.sampleRate : null,
+    currentTime: ctx ? ctx.currentTime.toFixed(2) : null,
+    muted,
+    unlocked,
+    htmlUnlocked,
+    initCount,
+    playCount,
+    lastError,
+    ua: navigator.userAgent,
+  };
 }
 
 function buildNoiseBuffer(c) {
@@ -54,11 +81,14 @@ function buildNoiseBuffer(c) {
 }
 
 export function initAudio() {
+  initCount++;
   unlockHtmlAudio();
   const c = ensureContext();
   if (!c) return;
   if (c.state === "suspended") {
-    c.resume().catch(() => {});
+    c.resume().catch((e) => {
+      lastError = "resume: " + (e && e.message ? e.message : String(e));
+    });
   }
   // Some mobile browsers keep an AudioContext silent until a real sound is
   // started synchronously inside the same user-gesture call stack that
@@ -74,7 +104,7 @@ export function initAudio() {
       osc.start(c.currentTime);
       osc.stop(c.currentTime + 0.05);
     } catch (e) {
-      /* ignore */
+      lastError = "unlock blip: " + (e && e.message ? e.message : String(e));
     }
   }
 }
@@ -123,8 +153,17 @@ function categoryForIntensity(intensity) {
 }
 
 export function playFart(intensity = 1) {
+  playCount++;
   const c = ensureContext();
   if (!c) return;
+  try {
+    playFartImpl(c, intensity);
+  } catch (e) {
+    lastError = "playFart: " + (e && e.message ? e.message : String(e));
+  }
+}
+
+function playFartImpl(c, intensity) {
   const cat = categoryForIntensity(clamp(intensity, 0, 1.4));
   const p = FART_PRESETS[cat];
   const t0 = c.currentTime;
