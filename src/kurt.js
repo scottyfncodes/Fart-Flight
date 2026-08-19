@@ -98,8 +98,8 @@ export function getButtPosition(kurt) {
   const rad = (kurt.rotation * Math.PI) / 180;
   const cos = Math.cos(rad);
   const sin = Math.sin(rad);
-  const localX = R * 0.02;
-  const localY = R * 0.62;
+  const localX = -R * 0.46;
+  const localY = R * 0.64;
   return {
     x: kurt.x + localX * cos - localY * sin,
     y: kurt.y + localX * sin + localY * cos,
@@ -144,6 +144,18 @@ export function drawKurt(ctx, kurt) {
   ctx.stroke();
   ctx.beginPath();
   ctx.arc(-R * 0.05, -R * 0.08, R * 0.3, 0.6, 2.1);
+  ctx.stroke();
+
+  // a distinct rounded backside, protruding past the torso outline at hip
+  // height the same way the knee mass does at the front — this is what
+  // actually sells the curled side-profile as a cannonball rather than a
+  // person sitting facing camera
+  ctx.fillStyle = SKIN;
+  ctx.beginPath();
+  ctx.ellipse(-R * 0.46, R * 0.46, R * 0.32, R * 0.28, -0.2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = OUTLINE;
+  ctx.lineWidth = 2;
   ctx.stroke();
 
   // knees tucked together, drawn as their own distinct mass so the
@@ -246,13 +258,13 @@ export function drawKurt(ctx, kurt) {
 }
 
 function drawButtCrack(ctx, R, wiggle) {
-  const cx = -R * 0.1 + wiggle;
+  const cx = -R * 0.46 + wiggle;
   ctx.strokeStyle = "rgba(140,80,50,0.45)";
   ctx.lineWidth = 1.6;
   ctx.lineCap = "round";
   ctx.beginPath();
-  ctx.moveTo(cx, R * 0.42);
-  ctx.quadraticCurveTo(cx, R * 0.52, cx, R * 0.6);
+  ctx.moveTo(cx, R * 0.28);
+  ctx.quadraticCurveTo(cx - R * 0.01, R * 0.46, cx, R * 0.64);
   ctx.stroke();
 }
 
