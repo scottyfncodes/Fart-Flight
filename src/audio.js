@@ -304,21 +304,36 @@ export function playGiggle() {
   const c = ensureContext();
   if (!c) return;
   const t0 = c.currentTime;
-  const noteCount = 3 + Math.floor(rand(0, 3));
-  const baseFreq = rand(480, 560);
-  const noteDur = 0.1;
-  for (let i = 0; i < noteCount; i++) {
-    const start = t0 + i * noteDur * 0.82;
-    const freq = baseFreq * rand(0.94, 1.12) + i * 14;
+  // distinct "heh-heh" syllables, not a continuous trill: each one is a
+  // breathy noise onset (the "h") followed by a tonal vowel that falls in
+  // pitch, with a real gap between syllables like an actual laugh
+  const syllableCount = Math.random() < 0.3 ? 3 : 2;
+  const baseFreq = rand(400, 480);
+  const syllDur = 0.11;
+  const gap = rand(0.09, 0.13);
+  for (let i = 0; i < syllableCount; i++) {
+    const start = t0 + i * (syllDur + gap);
+    const freq = baseFreq * (1 - i * 0.05) * rand(0.95, 1.06);
+
+    const noise = noiseSource(c);
+    const noiseFilter = c.createBiquadFilter();
+    noiseFilter.type = "highpass";
+    noiseFilter.frequency.value = 1400;
+    const noiseGain = envGain(c, 0.005, 0.03, 0.14, start);
+    noise.connect(noiseFilter);
+    noiseFilter.connect(noiseGain);
+    noiseGain.connect(masterGain);
+    noise.start(start);
+    noise.stop(start + 0.05);
+
     const osc = c.createOscillator();
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(freq, start);
-    osc.frequency.exponentialRampToValueAtTime(freq * 1.22, start + noteDur * 0.55);
-    osc.frequency.exponentialRampToValueAtTime(freq * 0.92, start + noteDur);
-    const g = envGain(c, 0.012, noteDur * 0.75, 0.26, start);
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(freq, start + 0.012);
+    osc.frequency.exponentialRampToValueAtTime(freq * 0.7, start + syllDur);
+    const g = envGain(c, 0.015, syllDur * 0.8, 0.28, start + 0.012);
     osc.connect(g);
     g.connect(masterGain);
-    osc.start(start);
-    osc.stop(start + noteDur + 0.03);
+    osc.start(start + 0.012);
+    osc.stop(start + syllDur + 0.03);
   }
 }
