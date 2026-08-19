@@ -98,8 +98,8 @@ export function getButtPosition(kurt) {
   const rad = (kurt.rotation * Math.PI) / 180;
   const cos = Math.cos(rad);
   const sin = Math.sin(rad);
-  const localX = R * 0.05;
-  const localY = R * 0.9;
+  const localX = R * 0.02;
+  const localY = R * 0.62;
   return {
     x: kurt.x + localX * cos - localY * sin,
     y: kurt.y + localX * sin + localY * cos,
@@ -123,41 +123,54 @@ export function drawKurt(ctx, kurt) {
   ctx.scale(kurt.scaleX, kurt.scaleY);
 
   // back arm: sweeps behind the body around to the clasped hands
-  drawArmCurve(ctx, R, -R * 0.18, -R * 0.32, -R * 0.7, R * 0.14, R * 0.24, R * 0.5);
+  drawArmCurve(ctx, R, -R * 0.15, -R * 0.42, -R * 0.62, R * 0.05, R * 0.15, R * 0.42);
 
-  // one rounded body mass reads as the tucked torso + thighs together,
-  // matching a real cannonball tuck instead of separate limb shapes
+  // medium-build torso, sized down from a full round cannonball so the
+  // silhouette reads as an actual body, not one big ball
   ctx.fillStyle = SKIN;
   ctx.beginPath();
-  ctx.ellipse(R * 0.05, R * 0.1, R * 0.88, R * 0.8, 0.06, 0, Math.PI * 2);
+  ctx.ellipse(0, 0, R * 0.62, R * 0.6, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = OUTLINE;
   ctx.lineWidth = 2;
   ctx.stroke();
 
-  // soft shading where the thighs tuck against the chest
-  ctx.fillStyle = "rgba(190,120,80,0.22)";
+  // chest definition
+  ctx.strokeStyle = "rgba(150,90,55,0.35)";
+  ctx.lineWidth = 1.6;
   ctx.beginPath();
-  ctx.ellipse(R * 0.3, R * 0.26, R * 0.48, R * 0.38, 0.25, 0, Math.PI * 2);
-  ctx.fill();
+  ctx.moveTo(-R * 0.02, -R * 0.32);
+  ctx.lineTo(-R * 0.02, R * 0.02);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(-R * 0.05, -R * 0.08, R * 0.3, 0.6, 2.1);
+  ctx.stroke();
 
-  // knee crease
-  ctx.strokeStyle = "rgba(150,90,55,0.4)";
-  ctx.lineWidth = 2;
+  // knees tucked together, drawn as their own distinct mass so the
+  // "arms wrapped around both knees" pose actually reads
+  ctx.fillStyle = SKIN;
   ctx.beginPath();
-  ctx.moveTo(-R * 0.24, -R * 0.08);
-  ctx.quadraticCurveTo(R * 0.14, R * 0.08, R * 0.52, -R * 0.04);
+  ctx.ellipse(R * 0.42, R * 0.32, R * 0.46, R * 0.4, 0.12, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = OUTLINE;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.strokeStyle = "rgba(150,90,55,0.4)";
+  ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  ctx.moveTo(R * 0.4, R * 0.0);
+  ctx.quadraticCurveTo(R * 0.46, R * 0.3, R * 0.4, R * 0.62);
   ctx.stroke();
 
   const wiggle = kurt.thrusting ? Math.sin(kurt.buttWigglePhase) * R * 0.04 : 0;
   drawButtCrack(ctx, R, wiggle);
 
-  drawFoot(ctx, R, R * 0.82, R * 0.48, 0.6);
-  drawFoot(ctx, R, R * 0.7, R * 0.74, 0.8);
+  drawFoot(ctx, R, R * 0.8, R * 0.28, 0.5);
+  drawFoot(ctx, R, R * 0.68, R * 0.68, 0.85);
 
-  // front arm: comes over the top of the tuck to meet the back arm
-  drawArmCurve(ctx, R, R * 0.22, -R * 0.3, R * 0.62, R * 0.14, R * 0.3, R * 0.48);
-  drawClaspedHands(ctx, R, R * 0.27, R * 0.49);
+  // front arm: wraps over the top of both knees to meet the back arm
+  drawArmCurve(ctx, R, R * 0.22, -R * 0.38, R * 0.56, R * 0.02, R * 0.24, R * 0.4);
+  drawClaspedHands(ctx, R, R * 0.2, R * 0.42);
 
   drawAccessoryBehindHead(ctx, R, kurt.cosmetic);
 
@@ -215,13 +228,13 @@ export function drawKurt(ctx, kurt) {
 }
 
 function drawButtCrack(ctx, R, wiggle) {
-  const cx = -R * 0.16 + wiggle;
+  const cx = -R * 0.1 + wiggle;
   ctx.strokeStyle = "rgba(140,80,50,0.45)";
   ctx.lineWidth = 1.6;
   ctx.lineCap = "round";
   ctx.beginPath();
-  ctx.moveTo(cx, R * 0.62);
-  ctx.quadraticCurveTo(cx, R * 0.74, cx, R * 0.84);
+  ctx.moveTo(cx, R * 0.42);
+  ctx.quadraticCurveTo(cx, R * 0.52, cx, R * 0.6);
   ctx.stroke();
 }
 
@@ -340,8 +353,43 @@ function drawArmCurve(ctx, R, sx, sy, cx, cy, ex, ey) {
   ctx.stroke();
 }
 
+function drawFedora(ctx, R) {
+  ctx.fillStyle = "#5c4b3a";
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.36, -R * 0.42);
+  ctx.quadraticCurveTo(-R * 0.4, -R * 0.72, 0, -R * 0.74);
+  ctx.quadraticCurveTo(R * 0.4, -R * 0.72, R * 0.36, -R * 0.42);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = "rgba(0,0,0,0.25)";
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  ctx.fillStyle = "#4a3c30";
+  ctx.beginPath();
+  ctx.ellipse(0, -R * 0.42, R * 0.58, R * 0.13, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(0,0,0,0.25)";
+  ctx.stroke();
+
+  ctx.fillStyle = "#2e261d";
+  ctx.beginPath();
+  ctx.ellipse(0, -R * 0.5, R * 0.37, R * 0.06, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = "rgba(0,0,0,0.3)";
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(0, -R * 0.74);
+  ctx.lineTo(0, -R * 0.58);
+  ctx.stroke();
+}
+
 function drawAccessoryOnHead(ctx, R, cosmetic) {
-  if (!cosmetic || !cosmetic.accessory) return;
+  if (!cosmetic || !cosmetic.accessory) {
+    drawFedora(ctx, R);
+    return;
+  }
   const accent = cosmetic.accent;
   switch (cosmetic.accessory) {
     case "cowboy":
@@ -405,6 +453,7 @@ function drawAccessoryOnHead(ctx, R, cosmetic) {
       ctx.fill();
       break;
     default:
+      drawFedora(ctx, R);
       break;
   }
 }
