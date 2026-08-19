@@ -199,8 +199,6 @@ export function drawKurt(ctx, kurt) {
   drawEye(ctx, R * 0.16, eyeY, R, kurt.blinking, silly);
   drawEyebrow(ctx, R, R * 0.16, eyeY, silly);
 
-  drawBeard(ctx, R);
-
   ctx.fillStyle = MUSTACHE;
   ctx.beginPath();
   ctx.moveTo(R * 0.14, R * 0.14);
@@ -317,37 +315,6 @@ function drawEye(ctx, ex, ey, R, blinking, silly) {
   ctx.beginPath();
   ctx.arc(ex + R * 0.045, ey - R * 0.02, R * 0.018 * scale, 0, Math.PI * 2);
   ctx.fill();
-}
-
-function drawBeard(ctx, R) {
-  // a short, scruffy beard hugging just the jaw and chin — staying well
-  // below the cheek and leaving a visible gap under the sideburn — with
-  // the mustache/mouth drawn on top of it afterward
-  ctx.fillStyle = MUSTACHE;
-  ctx.beginPath();
-  ctx.moveTo(-R * 0.26, R * 0.34);
-  ctx.quadraticCurveTo(-R * 0.02, R * 0.5, R * 0.24, R * 0.5);
-  ctx.quadraticCurveTo(R * 0.4, R * 0.44, R * 0.46, R * 0.3);
-  ctx.quadraticCurveTo(R * 0.32, R * 0.24, R * 0.16, R * 0.24);
-  ctx.quadraticCurveTo(-R * 0.04, R * 0.26, -R * 0.26, R * 0.34);
-  ctx.closePath();
-  ctx.fill();
-  ctx.strokeStyle = OUTLINE;
-  ctx.lineWidth = 1.3;
-  ctx.stroke();
-
-  // a few stubble strokes for texture
-  ctx.strokeStyle = "rgba(0,0,0,0.2)";
-  ctx.lineWidth = 1;
-  ctx.lineCap = "round";
-  ctx.beginPath();
-  ctx.moveTo(-R * 0.06, R * 0.32);
-  ctx.lineTo(-R * 0.02, R * 0.4);
-  ctx.moveTo(R * 0.12, R * 0.34);
-  ctx.lineTo(R * 0.16, R * 0.42);
-  ctx.moveTo(R * 0.26, R * 0.3);
-  ctx.lineTo(R * 0.3, R * 0.36);
-  ctx.stroke();
 }
 
 function drawShortHairCap(ctx, R) {

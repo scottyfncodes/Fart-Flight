@@ -104,7 +104,7 @@ export function createGame(canvas, stageEl) {
     spawnFartBurst(particles, butt.x, butt.y, clamped, 165);
     pulseFart(kurt, clamped);
     if (clamped > 0.85) triggerShake(0.12, 4 * clamped);
-    maybeGiggle();
+    if (Math.random() < 0.35) maybeGiggle();
   }
 
   function maybeGiggle() {

@@ -315,7 +315,7 @@ export function playGiggle() {
     osc.frequency.setValueAtTime(freq, start);
     osc.frequency.exponentialRampToValueAtTime(freq * 1.22, start + noteDur * 0.55);
     osc.frequency.exponentialRampToValueAtTime(freq * 0.92, start + noteDur);
-    const g = envGain(c, 0.012, noteDur * 0.75, 0.16, start);
+    const g = envGain(c, 0.012, noteDur * 0.75, 0.26, start);
     osc.connect(g);
     g.connect(masterGain);
     osc.start(start);
