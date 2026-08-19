@@ -364,8 +364,7 @@ function drawEyebrow(ctx, R, ex, eyeY, silly) {
     ctx.stroke();
   } else {
     ctx.beginPath();
-    ctx.moveTo(ex - R * 0.14, eyeY - R * 0.2);
-    ctx.lineTo(ex + R * 0.13, eyeY - R * 0.1);
+    ctx.arc(ex, eyeY - R * 0.24, R * 0.14, Math.PI * 1.15, Math.PI * 1.65);
     ctx.stroke();
   }
 }
@@ -373,25 +372,34 @@ function drawEyebrow(ctx, R, ex, eyeY, silly) {
 function drawMouth(ctx, R, silly) {
   const mx = R * 0.28;
   if (silly) {
+    // a wide, upturned open grin — reads as an excited laugh rather than
+    // the round "O" of shock
     ctx.fillStyle = "#7a2020";
     ctx.beginPath();
-    ctx.ellipse(mx, R * 0.33, R * 0.15, R * 0.16, 0, 0, Math.PI * 2);
+    ctx.moveTo(mx - R * 0.19, R * 0.28);
+    ctx.quadraticCurveTo(mx, R * 0.21, mx + R * 0.19, R * 0.28);
+    ctx.quadraticCurveTo(mx + R * 0.15, R * 0.44, mx, R * 0.47);
+    ctx.quadraticCurveTo(mx - R * 0.15, R * 0.44, mx - R * 0.19, R * 0.28);
+    ctx.closePath();
     ctx.fill();
     ctx.fillStyle = "#fff";
     ctx.beginPath();
-    ctx.ellipse(mx, R * 0.25, R * 0.12, R * 0.045, 0, 0, Math.PI * 2);
+    ctx.ellipse(mx, R * 0.27, R * 0.15, R * 0.045, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = OUTLINE;
     ctx.lineWidth = 1.4;
     ctx.beginPath();
-    ctx.ellipse(mx, R * 0.33, R * 0.15, R * 0.16, 0, 0, Math.PI * 2);
+    ctx.moveTo(mx - R * 0.19, R * 0.28);
+    ctx.quadraticCurveTo(mx, R * 0.21, mx + R * 0.19, R * 0.28);
+    ctx.quadraticCurveTo(mx + R * 0.15, R * 0.44, mx, R * 0.47);
+    ctx.quadraticCurveTo(mx - R * 0.15, R * 0.44, mx - R * 0.19, R * 0.28);
     ctx.stroke();
   } else {
-    ctx.strokeStyle = "#8a5a35";
-    ctx.lineWidth = R * 0.05;
+    ctx.strokeStyle = "#5b3a24";
+    ctx.lineWidth = R * 0.06;
     ctx.lineCap = "round";
     ctx.beginPath();
-    ctx.arc(mx, R * 0.44, R * 0.1, Math.PI * 1.35, Math.PI * 1.75);
+    ctx.arc(mx, R * 0.4, R * 0.13, Math.PI * 0.2, Math.PI * 0.8);
     ctx.stroke();
   }
 }
