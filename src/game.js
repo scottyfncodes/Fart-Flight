@@ -427,5 +427,11 @@ export function createGame(canvas, stageEl) {
     start();
   }
 
-  return { init, resize };
+  function forceUnmute() {
+    audio.initAudio();
+    audio.setMuted(false);
+    ui.setMuteLabel(false);
+  }
+
+  return { init, resize, forceUnmute };
 }
