@@ -1,16 +1,21 @@
-import { rand } from "./utils.js";
+import { rand, choose } from "./utils.js";
 
 export function createParticleSystem() {
   return { puffs: [], bits: [], sparkles: [] };
 }
 
-export function spawnFartBurst(sys, x, y, intensity, angleDeg = 100) {
+const BIT_GREENS = ["#8bc34a", "#7cb342", "#9ccc65", "#6fa83a"];
+
+export function spawnFartBurst(sys, x, y, intensity, angleDeg = 165) {
   const count = Math.round(4 + intensity * 5);
   const baseAngle = (angleDeg * Math.PI) / 180;
   for (let i = 0; i < count; i++) {
-    const spread = (rand(-26, 26) * Math.PI) / 180;
+    const spread = (rand(-22, 22) * Math.PI) / 180;
     const a = baseAngle + spread;
-    const speed = rand(35, 100) * (0.55 + intensity * 0.55);
+    // a hard initial kick away from the body so the cloud is already
+    // clearing Kurt's face by the first rendered frame, drag takes over
+    // from there to let it drift and billow
+    const speed = rand(70, 150) * (0.55 + intensity * 0.55);
     sys.puffs.push({
       x: x + rand(-4, 4),
       y: y + rand(-4, 4),
@@ -22,18 +27,19 @@ export function spawnFartBurst(sys, x, y, intensity, angleDeg = 100) {
       spin: rand(-1, 1),
     });
   }
-  const bitCount = Math.round(3 + intensity * 4);
+  const bitCount = Math.round(5 + intensity * 6);
   for (let i = 0; i < bitCount; i++) {
-    const spread = (rand(-38, 38) * Math.PI) / 180;
+    const spread = (rand(-34, 34) * Math.PI) / 180;
     const a = baseAngle + spread;
-    const speed = rand(80, 170) * (0.55 + intensity * 0.6);
+    const speed = rand(90, 190) * (0.55 + intensity * 0.6);
     sys.bits.push({
       x, y,
       vx: Math.cos(a) * speed,
       vy: Math.sin(a) * speed,
-      r: rand(1.5, 3),
+      r: rand(1.8, 3.6),
       life: 0,
       maxLife: rand(0.4, 0.65),
+      color: choose(BIT_GREENS),
     });
   }
 }
@@ -82,15 +88,15 @@ export function drawParticles(ctx, sys) {
   for (const p of sys.puffs) {
     const t = p.life / p.maxLife;
     ctx.globalAlpha = (1 - t) * 0.55;
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = "#e4f0d4";
     ctx.beginPath();
     ctx.arc(p.x, p.y, p.r * (0.7 + t * 0.8), 0, Math.PI * 2);
     ctx.fill();
   }
   for (const p of sys.bits) {
     const t = p.life / p.maxLife;
-    ctx.globalAlpha = (1 - t) * 0.7;
-    ctx.fillStyle = "#d7e8c8";
+    ctx.globalAlpha = (1 - t) * 0.85;
+    ctx.fillStyle = p.color || "#8bc34a";
     ctx.beginPath();
     ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
     ctx.fill();

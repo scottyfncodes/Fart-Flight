@@ -101,15 +101,16 @@ export function createGame(canvas, stageEl) {
     registerFart(scoring, clamped);
     audio.playFart(clamped);
     const butt = getButtPosition(kurt);
-    spawnFartBurst(particles, butt.x, butt.y, clamped, 91);
+    spawnFartBurst(particles, butt.x, butt.y, clamped, 165);
     pulseFart(kurt, clamped);
     if (clamped > 0.85) triggerShake(0.12, 4 * clamped);
+    maybeGiggle();
   }
 
   function maybeGiggle() {
     if (giggleTimer > 0) return;
     audio.playGiggle();
-    giggleTimer = rand(1.6, 3.2);
+    giggleTimer = rand(0.4, 0.6);
   }
 
   function beginPlay() {
@@ -183,7 +184,6 @@ export function createGame(canvas, stageEl) {
     if (state !== "playing") return;
     beginThrust(kurt);
     fartTickTimer = 0;
-    maybeGiggle();
   }
 
   function handleUp() {
@@ -204,7 +204,7 @@ export function createGame(canvas, stageEl) {
       } else {
         beginThrust(kurt);
         const butt = getButtPosition(kurt);
-        spawnFartBurst(particles, butt.x, butt.y, 0.6, 91);
+        spawnFartBurst(particles, butt.x, butt.y, 0.6, 165);
         maybeGiggle();
         idleTapTimer = rand(0.5, 0.8);
       }
@@ -234,7 +234,8 @@ export function createGame(canvas, stageEl) {
       fartTickTimer -= dt;
       if (fartTickTimer <= 0) {
         fartTick(rand(0.55, 0.85) * mods.thrustMult);
-        fartTickTimer = PHYSICS.fartTickInterval;
+        // irregular rhythm instead of a metronomic toot-toot-toot
+        fartTickTimer = PHYSICS.fartTickInterval * rand(0.55, 1.7);
       }
     } else {
       fartTickTimer = 0;

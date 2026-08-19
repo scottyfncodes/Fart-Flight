@@ -133,9 +133,18 @@ export function playFart(intensity = 1) {
   const p = FART_PRESETS[cat];
   const t0 = c.currentTime;
   const dur = rand(p.duration[0], p.duration[1]);
-  const startFreq = rand(p.startFreq[0], p.startFreq[1]);
-  const endFreq = rand(p.endFreq[0], p.endFreq[1]);
-  const buzzFreq = rand(p.buzz[0], p.buzz[1]);
+  // a wide overall pitch multiplier on top of the preset's own range, so
+  // farts land noticeably sharp or flat instead of always landing neatly
+  // inside their category's "normal" band
+  const pitchMult = rand(0.76, 1.32);
+  const startFreq = rand(p.startFreq[0], p.startFreq[1]) * pitchMult;
+  const endFreq = rand(p.endFreq[0], p.endFreq[1]) * pitchMult;
+  // the buzz gets its own independent detune so it sometimes clashes
+  // against the main tone instead of always sitting in a clean interval
+  const buzzFreq = rand(p.buzz[0], p.buzz[1]) * rand(0.7, 1.45);
+  // buzz starts slightly early or late relative to the main tone — a
+  // ragged, off-time attack instead of both voices firing in lockstep
+  const buzzOffset = rand(-0.02, 0.025);
 
   const filter = c.createBiquadFilter();
   filter.type = "lowpass";
@@ -149,19 +158,27 @@ export function playFart(intensity = 1) {
   const osc = c.createOscillator();
   osc.type = "sawtooth";
   osc.frequency.setValueAtTime(startFreq, t0);
-  osc.frequency.exponentialRampToValueAtTime(Math.max(20, endFreq), t0 + dur);
+  // roughly a third of farts wobble mid-note instead of sliding cleanly
+  // from start pitch to end pitch, like the pitch caught a hiccup
+  if (Math.random() < 0.35) {
+    const wobbleT = t0 + dur * rand(0.3, 0.6);
+    osc.frequency.exponentialRampToValueAtTime(Math.max(20, startFreq * rand(1.15, 1.4)), wobbleT);
+    osc.frequency.exponentialRampToValueAtTime(Math.max(20, endFreq), t0 + dur);
+  } else {
+    osc.frequency.exponentialRampToValueAtTime(Math.max(20, endFreq), t0 + dur);
+  }
   osc.connect(master);
   osc.start(t0);
   osc.stop(t0 + dur + 0.02);
 
   const buzz = c.createOscillator();
   buzz.type = "square";
-  buzz.frequency.setValueAtTime(buzzFreq, t0);
+  buzz.frequency.setValueAtTime(buzzFreq, t0 + buzzOffset);
   const buzzGain = c.createGain();
   buzzGain.gain.value = p.gain * 0.35;
   buzz.connect(buzzGain);
   buzzGain.connect(master);
-  buzz.start(t0);
+  buzz.start(t0 + buzzOffset);
   buzz.stop(t0 + dur + 0.02);
 
   const noise = noiseSource(c);
