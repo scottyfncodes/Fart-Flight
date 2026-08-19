@@ -1,5 +1,5 @@
-const STRAND_COUNT = 7;
-const REST_LENGTHS = [6, 5, 3.5, 2.5];
+const STRAND_COUNT = 4;
+const REST_LENGTHS = [3.4, 2.6, 1.8, 1.2];
 const DAMPING = 0.9;
 
 function createStrand(offsetX, offsetY, lenScale) {
@@ -15,8 +15,10 @@ export function createHair() {
   const n = STRAND_COUNT;
   for (let i = 0; i < n; i++) {
     const t = i / (n - 1) - 0.5;
-    // mildly biased toward the back of the scalp, leaving a little forehead bare
-    strands.push(createStrand(-6 + t * 13, -Math.abs(t) * 4 - 1, 1 - Math.abs(t) * 0.3));
+    // a handful of short flyaway wisps sprouting from the crown of the
+    // short-hair cap, mainly for the thrust-burst animation; staggered
+    // roots keep them from fusing into one solid block
+    strands.push(createStrand(-3 + t * 12, -Math.abs(t) * 2, 1 - Math.abs(t) * 0.3));
   }
   return { strands };
 }
@@ -90,7 +92,7 @@ export function drawHair(ctx, hair, baseColor, highlightColor) {
   for (const s of hair.strands) {
     const pts = s.points;
     ctx.strokeStyle = baseColor;
-    ctx.lineWidth = 8;
+    ctx.lineWidth = 4;
     ctx.beginPath();
     ctx.moveTo(pts[0].x, pts[0].y);
     for (let i = 1; i < pts.length - 1; i++) {
@@ -102,7 +104,7 @@ export function drawHair(ctx, hair, baseColor, highlightColor) {
     ctx.stroke();
 
     ctx.strokeStyle = highlightColor;
-    ctx.lineWidth = 2.5;
+    ctx.lineWidth = 1.4;
     ctx.globalAlpha = 0.6;
     ctx.beginPath();
     ctx.moveTo(pts[0].x, pts[0].y);
