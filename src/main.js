@@ -12,3 +12,9 @@ const stage = document.getElementById("stage");
 
 const game = createGame(canvas, stage);
 game.init();
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  });
+}
