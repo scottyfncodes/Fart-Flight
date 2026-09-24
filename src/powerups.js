@@ -73,10 +73,22 @@ export function drawPowerups(ctx, field) {
 function drawIcon(ctx, x, y, def) {
   ctx.save();
   ctx.translate(x, y);
-  ctx.fillStyle = "rgba(255,255,255,0.55)";
+  // pulsing halo so pickups pop against busy backgrounds at speed
+  const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 180);
+  ctx.globalAlpha = 0.35 + pulse * 0.25;
+  ctx.fillStyle = def.color;
+  ctx.beginPath();
+  ctx.arc(0, 0, 24 + pulse * 5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = "rgba(255,255,255,0.9)";
+  ctx.strokeStyle = "rgba(20,24,40,0.45)";
+  ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.arc(0, 0, 19, 0, Math.PI * 2);
   ctx.fill();
+  ctx.stroke();
+  ctx.rotate(Math.sin(performance.now() / 260) * 0.2);
 
   ctx.fillStyle = def.color;
   switch (def.icon) {

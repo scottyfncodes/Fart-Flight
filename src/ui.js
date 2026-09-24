@@ -3,6 +3,16 @@ import { COSMETICS } from "./config.js";
 const els = {};
 let gradeToastTimer = null;
 let nearMissTimer = null;
+let countUpRaf = 0;
+
+const OVER_TITLES = [
+  "Oh no u pooted!",
+  "Pbbbbbt.",
+  "Gas leak detected.",
+  "Well, that stinks.",
+  "Rest in pieces.",
+  "Tooted and booted.",
+];
 
 const COSMETIC_ICONS = {
   classic: "💨",
@@ -25,6 +35,19 @@ export function initUI(handlers) {
   els.cosmeticRow = document.getElementById("cosmetic-row");
   els.metaBest = document.getElementById("meta-best");
   els.metaGrade = document.getElementById("meta-grade");
+  els.metaFarts = document.getElementById("meta-farts");
+  els.cosmeticName = document.getElementById("cosmetic-name");
+  els.btnMusic = document.getElementById("btn-music");
+  els.btnPause = document.getElementById("btn-pause");
+  els.btnResume = document.getElementById("btn-resume");
+  els.btnQuit = document.getElementById("btn-quit");
+  els.btnShare = document.getElementById("btn-share");
+  els.pause = document.getElementById("pause-screen");
+  els.ready = document.getElementById("ready-prompt");
+  els.deathCause = document.getElementById("death-cause");
+  els.pbDiff = document.getElementById("pb-diff");
+  els.unlockBanner = document.getElementById("unlock-banner");
+  els.statClose = document.getElementById("stat-close");
 
   els.hudDistance = document.getElementById("hud-distance-val");
   els.hudGrade = document.getElementById("hud-grade-code");
@@ -38,7 +61,7 @@ export function initUI(handlers) {
   els.toastName = document.getElementById("toast-name");
   els.nearMissToast = document.getElementById("near-miss-toast");
 
-  els.overTitle = document.querySelector(".over-title");
+  els.overTitle = document.querySelector("#gameover-screen .over-title");
   els.pbBanner = document.getElementById("pb-banner");
   els.statDistance = document.getElementById("stat-distance");
   els.statFarts = document.getElementById("stat-farts");
@@ -64,6 +87,28 @@ export function initUI(handlers) {
     e.preventDefault();
     handlers.onToggleMute();
   });
+  els.btnMusic.addEventListener("click", (e) => {
+    e.preventDefault();
+    handlers.onToggleMusic();
+  });
+  // pointerdown so the tap can't fall through and count as a fart
+  els.btnPause.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    handlers.onPause();
+  });
+  els.btnResume.addEventListener("click", (e) => {
+    e.preventDefault();
+    handlers.onResume();
+  });
+  els.btnQuit.addEventListener("click", (e) => {
+    e.preventDefault();
+    handlers.onQuit();
+  });
+  els.btnShare.addEventListener("click", (e) => {
+    e.preventDefault();
+    handlers.onShare();
+  });
 }
 
 export function renderCosmeticRow(selectedId, bestMeters, onSelect) {
@@ -77,7 +122,12 @@ export function renderCosmeticRow(selectedId, bestMeters, onSelect) {
     chip.innerHTML = `<span>${COSMETIC_ICONS[c.id] || "💨"}</span>${unlocked ? "" : '<span class="lock-badge">🔒</span>'}`;
     if (unlocked) {
       chip.addEventListener("click", () => onSelect(c.id));
+    } else {
+      chip.addEventListener("click", () => {
+        els.cosmeticName.textContent = `REACH ${c.unlockMeters}m TO UNLOCK`;
+      });
     }
+    if (c.id === selectedId) els.cosmeticName.textContent = c.name.toUpperCase();
     els.cosmeticRow.appendChild(chip);
   }
 }
@@ -87,12 +137,40 @@ export function setMuteLabel(muted) {
   els.btnMute.setAttribute("aria-pressed", String(muted));
 }
 
-export function showStart(bestMeters, highestGradeCode) {
+export function setMusicLabel(muted) {
+  els.btnMusic.textContent = muted ? "MUSIC: OFF" : "MUSIC: ON";
+  els.btnMusic.setAttribute("aria-pressed", String(muted));
+}
+
+export function showReady() {
+  els.ready.classList.remove("hidden");
+}
+
+export function hideReady() {
+  els.ready.classList.add("hidden");
+}
+
+export function showPause() {
+  els.pause.classList.remove("hidden");
+}
+
+export function hidePause() {
+  els.pause.classList.add("hidden");
+}
+
+export function isGameOverVisible() {
+  return !els.gameover.classList.contains("hidden");
+}
+
+export function showStart(bestMeters, highestGradeCode, lifetimeFarts) {
   els.start.classList.remove("hidden");
   els.gameover.classList.add("hidden");
+  els.pause.classList.add("hidden");
   els.hud.classList.add("hidden");
+  els.ready.classList.add("hidden");
   els.metaBest.textContent = Math.floor(bestMeters) + "m";
   els.metaGrade.textContent = highestGradeCode;
+  els.metaFarts.textContent = lifetimeFarts.toLocaleString();
 }
 
 export function hideStart() {
@@ -120,6 +198,7 @@ export function updateHud(meters, gradeCode, dignityPct, activePowerup) {
     els.powerupIndicator.classList.remove("hidden");
     els.powerupName.textContent = activePowerup.def.label;
     els.powerupFill.style.width = clampPct((activePowerup.timeLeft / activePowerup.duration) * 100) + "%";
+    els.powerupIndicator.classList.toggle("ending", activePowerup.timeLeft < 1.5);
   } else {
     els.powerupIndicator.classList.add("hidden");
   }
@@ -151,12 +230,37 @@ export function flashNearMiss() {
   }, 550);
 }
 
-export function showGameOver(stats, isNewBest) {
+export function showGameOver(stats, isNewBest, { cause, prevBest, unlocked, onTick } = {}) {
   els.hud.classList.add("hidden");
+  els.ready.classList.add("hidden");
   els.gameover.classList.remove("hidden");
-  els.pbBanner.classList.toggle("hidden", !isNewBest);
-  els.pbBanner.textContent = isNewBest ? "NEW PERSONAL BEST" : "";
-  els.statDistance.textContent = Math.floor(stats.meters) + "m";
+  els.overTitle.textContent = OVER_TITLES[Math.floor(Math.random() * OVER_TITLES.length)];
+  els.deathCause.textContent = cause || "";
+  els.pbBanner.classList.add("hidden");
+  els.pbBanner.textContent = "NEW PERSONAL BEST";
+  const shortBy = Math.ceil(prevBest - stats.meters);
+  els.pbDiff.classList.toggle("hidden", isNewBest || !(prevBest > 0));
+  els.pbDiff.textContent = shortBy <= 25 ? `SO CLOSE! ${shortBy}m SHORT OF YOUR BEST` : `BEST: ${Math.floor(prevBest)}m`;
+  els.unlockBanner.classList.toggle("hidden", !unlocked);
+  els.unlockBanner.textContent = unlocked ? `UNLOCKED: ${unlocked.name.toUpperCase()}!` : "";
+
+  // tick the distance up like a slot machine, then reveal the PB banner
+  cancelAnimationFrame(countUpRaf);
+  const target = Math.floor(stats.meters);
+  const dur = Math.min(1100, 350 + target * 1.5);
+  const t0 = performance.now();
+  let lastShown = -1;
+  const step = (now) => {
+    const k = Math.min(1, (now - t0) / dur);
+    const v = Math.round(target * (1 - Math.pow(1 - k, 3)));
+    els.statDistance.textContent = v;
+    if (onTick && v !== lastShown && k < 1 && Math.floor(v / Math.max(1, target / 14)) !== Math.floor(lastShown / Math.max(1, target / 14))) onTick(k);
+    lastShown = v;
+    if (k < 1) countUpRaf = requestAnimationFrame(step);
+    else if (isNewBest) els.pbBanner.classList.remove("hidden");
+  };
+  countUpRaf = requestAnimationFrame(step);
+  els.statClose.textContent = stats.closeCalls;
   els.statFarts.textContent = stats.farts;
   els.statEfficiency.textContent = stats.efficiency + "%";
   els.statStreak.textContent = stats.bestStreak;
