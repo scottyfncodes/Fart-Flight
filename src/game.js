@@ -666,10 +666,10 @@ export function createGame(canvas, stageEl) {
     const m = Math.floor(scoring.meters);
     const grade = getGradeForMeters(scoring.meters);
     const url = location.href.split(/[?#]/)[0];
-    const text = `I farted my way ${m}m in KURT 💨 and earned ${grade.code}: ${grade.name}. Beat that.`;
+    const text = `I farted my way ${m}m in FfffKurt 💨 and earned ${grade.code}: ${grade.name}. Beat that.`;
     try {
       if (navigator.share) {
-        await navigator.share({ title: "KURT", text, url });
+        await navigator.share({ title: "FfffKurt", text, url });
         return;
       }
       await navigator.clipboard.writeText(`${text} ${url}`);
