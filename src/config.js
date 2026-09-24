@@ -130,4 +130,6 @@ export const STORAGE_KEYS = {
   farts: "kurt.lifetimeFarts",
   muted: "kurt.muted",
   cosmetic: "kurt.cosmetic",
+  musicMuted: "kurt.musicMuted",
+  runs: "kurt.runs",
 };

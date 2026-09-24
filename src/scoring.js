@@ -7,6 +7,7 @@ export function createScoring() {
     streak: 0,
     bestStreak: 0,
     dignity: 100,
+    closeCalls: 0,
   };
 }
 
@@ -18,6 +19,7 @@ export function resetScoring(s) {
   s.streak = 0;
   s.bestStreak = 0;
   s.dignity = 100;
+  s.closeCalls = 0;
 }
 
 export function addDistance(s, px, pxPerMeter) {
@@ -32,6 +34,7 @@ export function registerFart(s, intensity) {
 
 export function registerPass(s, nearMiss) {
   if (nearMiss) {
+    s.closeCalls += 1;
     s.streak = 0;
   } else {
     s.streak += 1;

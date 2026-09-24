@@ -299,3 +299,262 @@ export function playNearMiss() {
 export function playTapVariant() {
   playFart(rand(0.15, 0.4));
 }
+
+// ---------- extra SFX ----------
+
+export function playWhoosh() {
+  const c = ensureContext();
+  if (!c) return;
+  const t0 = c.currentTime;
+  const noise = noiseSource(c);
+  const f = c.createBiquadFilter();
+  f.type = "bandpass";
+  f.Q.value = 1.4;
+  f.frequency.setValueAtTime(600, t0);
+  f.frequency.exponentialRampToValueAtTime(3200, t0 + 0.16);
+  f.frequency.exponentialRampToValueAtTime(900, t0 + 0.3);
+  const g = envGain(c, 0.04, 0.26, 0.32, t0);
+  noise.connect(f);
+  f.connect(g);
+  g.connect(masterGain);
+  noise.start(t0);
+  noise.stop(t0 + 0.34);
+  blip(c, t0 + 0.05, 1318.5, 0.12, "triangle", 0.12);
+  blip(c, t0 + 0.11, 1760, 0.16, "triangle", 0.1);
+}
+
+export function playMilestone() {
+  const c = ensureContext();
+  if (!c) return;
+  const t0 = c.currentTime;
+  blip(c, t0, 987.77, 0.12, "square", 0.1);
+  blip(c, t0 + 0.07, 1318.5, 0.3, "triangle", 0.22);
+}
+
+export function playTick(pitch = 1) {
+  const c = ensureContext();
+  if (!c) return;
+  blip(c, c.currentTime, 880 * pitch, 0.04, "square", 0.06);
+}
+
+export function playUnlock() {
+  const c = ensureContext();
+  if (!c) return;
+  const t0 = c.currentTime;
+  [659.25, 830.61, 987.77, 1318.5].forEach((f, i) => blip(c, t0 + i * 0.07, f, 0.35, "triangle", 0.22));
+  [329.63, 493.88].forEach((f) => blip(c, t0 + 0.28, f, 0.5, "square", 0.08));
+}
+
+// wah... wah... wah... waaaaah — plays under the game-over reveal
+export function playSadTrombone() {
+  const c = ensureContext();
+  if (!c) return;
+  const t0 = c.currentTime + 0.05;
+  const notes = [
+    { f: 293.66, at: 0, dur: 0.34 },
+    { f: 277.18, at: 0.38, dur: 0.34 },
+    { f: 261.63, at: 0.76, dur: 0.34 },
+    { f: 246.94, at: 1.14, dur: 1.1 },
+  ];
+  for (const n of notes) {
+    const t = t0 + n.at;
+    const osc = c.createOscillator();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(n.f * 1.03, t);
+    osc.frequency.exponentialRampToValueAtTime(n.f, t + 0.06);
+    if (n.dur > 0.5) {
+      // the long last note sags and wobbles
+      const lfo = c.createOscillator();
+      const lfoGain = c.createGain();
+      lfo.frequency.value = 5.5;
+      lfoGain.gain.setValueAtTime(0, t);
+      lfoGain.gain.linearRampToValueAtTime(n.f * 0.035, t + 0.35);
+      lfo.connect(lfoGain);
+      lfoGain.connect(osc.frequency);
+      lfo.start(t);
+      lfo.stop(t + n.dur + 0.05);
+      osc.frequency.exponentialRampToValueAtTime(n.f * 0.94, t + n.dur);
+    }
+    // the "wah": a lowpass that opens and closes like a plunger mute
+    const wah = c.createBiquadFilter();
+    wah.type = "lowpass";
+    wah.Q.value = 6;
+    wah.frequency.setValueAtTime(300, t);
+    wah.frequency.exponentialRampToValueAtTime(1500, t + Math.min(0.14, n.dur * 0.4));
+    wah.frequency.exponentialRampToValueAtTime(420, t + n.dur);
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.22, t + 0.03);
+    g.gain.setValueAtTime(0.22, t + n.dur * 0.7);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + n.dur);
+    osc.connect(wah);
+    wah.connect(g);
+    g.connect(masterGain);
+    osc.start(t);
+    osc.stop(t + n.dur + 0.05);
+  }
+}
+
+// ---------- music ----------
+// A tiny lookahead sequencer: oompah tuba bass, off-beat chord stabs and a
+// cheeky melody, all synthesized. Layers come in as the run heats up.
+
+const MIDI = (n) => 440 * Math.pow(2, (n - 69) / 12);
+// 8th-note steps, 8 per bar, 4 bars. Chords: C F G C, then C F G7 C.
+const CHORDS = [
+  [48, [60, 64, 67]],
+  [41, [60, 65, 69]],
+  [43, [59, 62, 67]],
+  [48, [60, 64, 67]],
+  [48, [60, 64, 67]],
+  [41, [60, 65, 69]],
+  [43, [59, 62, 65]],
+  [48, [60, 64, 67]],
+];
+const _ = null;
+const MELODY = [
+  67, _, 72, _, 71, 72, 74, _,
+  72, _, 69, _, 65, _, 67, 69,
+  71, _, 74, _, 79, _, 77, 74,
+  72, _, 67, _, 72, _, _, _,
+  67, _, 72, _, 71, 72, 74, _,
+  77, _, 76, _, 74, _, 72, 74,
+  76, 74, 72, _, 71, _, 67, _,
+  72, _, 79, _, 84, _, _, _,
+];
+
+let musicGain = null;
+let musicTimer = null;
+let musicStep = 0;
+let nextStepTime = 0;
+let musicIntensity = 0; // 0 idle, 1 playing, ramps toward 2 with speed
+let musicOn = !storage.getMusicMuted();
+let tempo = 132;
+
+export function isMusicMuted() {
+  return !musicOn;
+}
+
+export function setMusicMuted(m) {
+  musicOn = !m;
+  storage.setMusicMuted(m);
+  if (musicGain && ctx) musicGain.gain.setTargetAtTime(m ? 0 : 0.55, ctx.currentTime, 0.1);
+}
+
+export function setMusicIntensity(level, speedFrac = 0) {
+  musicIntensity = level;
+  tempo = 132 + clamp(speedFrac, 0, 1) * 22;
+}
+
+export function startMusic() {
+  const c = ensureContext();
+  if (!c || musicTimer) return;
+  if (!musicGain) {
+    musicGain = c.createGain();
+    musicGain.connect(masterGain);
+  }
+  musicGain.gain.cancelScheduledValues(c.currentTime);
+  musicGain.gain.setValueAtTime(0.0001, c.currentTime);
+  musicGain.gain.setTargetAtTime(musicOn ? 0.55 : 0, c.currentTime, 0.15);
+  musicStep = 0;
+  nextStepTime = c.currentTime + 0.08;
+  musicTimer = setInterval(scheduleMusic, 25);
+}
+
+export function stopMusic(fade = 0.25) {
+  if (!musicTimer) return;
+  clearInterval(musicTimer);
+  musicTimer = null;
+  if (musicGain && ctx) {
+    musicGain.gain.cancelScheduledValues(ctx.currentTime);
+    musicGain.gain.setTargetAtTime(0.0001, ctx.currentTime, fade / 3);
+  }
+}
+
+function scheduleMusic() {
+  const c = ctx;
+  if (!c) return;
+  // after a long stall (backgrounded tab) don't try to catch up
+  if (nextStepTime < c.currentTime - 0.2) nextStepTime = c.currentTime + 0.05;
+  while (nextStepTime < c.currentTime + 0.12) {
+    playStep(c, musicStep, nextStepTime);
+    nextStepTime += 60 / tempo / 2;
+    musicStep = (musicStep + 1) % MELODY.length;
+  }
+}
+
+function playStep(c, step, t) {
+  const bar = Math.floor(step / 8);
+  const beat = step % 8;
+  const [root, chord] = CHORDS[bar];
+  const dur8 = 60 / tempo / 2;
+
+  // oom: bass on 1 and 3 (root, then fifth)
+  if (beat === 0 || beat === 4) {
+    tuba(c, t, MIDI(beat === 0 ? root : root + 7), dur8 * 1.6);
+  }
+  // pah: short chord stabs on the off-beats
+  if (beat === 2 || beat === 6) {
+    for (const n of chord) pluck(c, t, MIDI(n), dur8 * 0.7, "square", 0.028, 2200);
+  }
+  if (musicIntensity >= 1) {
+    const m = MELODY[step];
+    if (m) pluck(c, t, MIDI(m), dur8 * 1.4, "triangle", 0.1, 3500);
+  }
+  if (musicIntensity >= 1.4 && beat % 2 === 1) hat(c, t, 0.05);
+  if (musicIntensity >= 1.75 && beat % 2 === 0) hat(c, t, 0.03);
+}
+
+function tuba(c, t, freq, dur) {
+  const osc = c.createOscillator();
+  osc.type = "sawtooth";
+  osc.frequency.setValueAtTime(freq * 0.97, t);
+  osc.frequency.exponentialRampToValueAtTime(freq, t + 0.03);
+  const f = c.createBiquadFilter();
+  f.type = "lowpass";
+  f.frequency.setValueAtTime(260, t);
+  f.frequency.exponentialRampToValueAtTime(700, t + 0.04);
+  f.frequency.exponentialRampToValueAtTime(240, t + dur);
+  f.Q.value = 3;
+  const g = c.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.32, t + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  osc.connect(f);
+  f.connect(g);
+  g.connect(musicGain);
+  osc.start(t);
+  osc.stop(t + dur + 0.02);
+}
+
+function pluck(c, t, freq, dur, type, gain, cutoff) {
+  const osc = c.createOscillator();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, t);
+  const f = c.createBiquadFilter();
+  f.type = "lowpass";
+  f.frequency.setValueAtTime(cutoff, t);
+  f.frequency.exponentialRampToValueAtTime(cutoff * 0.3, t + dur);
+  const g = c.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(gain, t + 0.008);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  osc.connect(f);
+  f.connect(g);
+  g.connect(musicGain);
+  osc.start(t);
+  osc.stop(t + dur + 0.02);
+}
+
+function hat(c, t, gain) {
+  const src = noiseSource(c);
+  const f = c.createBiquadFilter();
+  f.type = "highpass";
+  f.frequency.value = 7000;
+  const g = envGain(c, 0.002, 0.04, gain, t);
+  src.connect(f);
+  f.connect(g);
+  g.connect(musicGain);
+  src.start(t, Math.random());
+  src.stop(t + 0.06);
+}

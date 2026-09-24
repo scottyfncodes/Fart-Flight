@@ -44,6 +44,12 @@ export const storage = {
   getMuted: () => get(STORAGE_KEYS.muted, "0") === "1",
   setMuted: (m) => set(STORAGE_KEYS.muted, m ? "1" : "0"),
 
+  getMusicMuted: () => get(STORAGE_KEYS.musicMuted, "0") === "1",
+  setMusicMuted: (m) => set(STORAGE_KEYS.musicMuted, m ? "1" : "0"),
+
+  getRuns: () => Number(get(STORAGE_KEYS.runs, 0)) || 0,
+  addRun: () => set(STORAGE_KEYS.runs, storage.getRuns() + 1),
+
   getCosmetic: () => get(STORAGE_KEYS.cosmetic, "classic"),
   setCosmetic: (id) => set(STORAGE_KEYS.cosmetic, id),
 };

@@ -19,6 +19,7 @@ export function createKurt() {
     fartExprTimer: 0,
     hair: createHair(),
     cosmetic: null,
+    dizzy: false,
   };
 }
 
@@ -36,6 +37,7 @@ export function resetKurt(kurt, x, y, cosmetic) {
   kurt.blinkTimer = rand(1.5, 3);
   kurt.fartExprIndex = 0;
   kurt.fartExprTimer = 0;
+  kurt.dizzy = false;
   kurt.cosmetic = cosmetic;
   resetHair(kurt.hair, x + PHYSICS.kurtRadius * 0.2, y - PHYSICS.kurtRadius * 1.3);
 }
@@ -92,6 +94,12 @@ export function updateKurt(kurt, dt, gravityMult, scrollSpeed, thrustMult = 1) {
     kurt.blinkTimer = kurt.blinking ? 0.09 : rand(2, 4.5);
   }
 
+  updateKurtHair(kurt, dt, scrollSpeed);
+}
+
+// keeps the hair wisps attached to the head wherever Kurt's body goes,
+// including while he's tumbling after a crash
+export function updateKurtHair(kurt, dt, scrollSpeed) {
   const R = PHYSICS.kurtRadius;
   const rad = (kurt.rotation * Math.PI) / 180;
   const cos = Math.cos(rad);
@@ -209,7 +217,7 @@ export function drawKurt(ctx, kurt) {
   ctx.stroke();
 
   const eyeY = -R * 0.08;
-  const expr = kurt.thrusting ? FART_EXPRESSIONS[kurt.fartExprIndex] : "happy";
+  const expr = kurt.dizzy ? "dizzy" : kurt.thrusting ? FART_EXPRESSIONS[kurt.fartExprIndex] : "happy";
 
   if (expr === "embarrassed") {
     ctx.fillStyle = "rgba(230,90,90,0.4)";
@@ -314,6 +322,20 @@ function drawFoot(ctx, R, cx, cy, rot) {
 }
 
 function drawEye(ctx, ex, ey, R, blinking, expr) {
+  if (expr === "dizzy") {
+    // knocked-out X eye
+    ctx.strokeStyle = "#2b2016";
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+    const d = R * 0.1;
+    ctx.beginPath();
+    ctx.moveTo(ex - d, ey - d);
+    ctx.lineTo(ex + d, ey + d);
+    ctx.moveTo(ex + d, ey - d);
+    ctx.lineTo(ex - d, ey + d);
+    ctx.stroke();
+    return;
+  }
   if (expr === "laughing") {
     // scrunched shut from laughing, regardless of the blink timer
     ctx.strokeStyle = "#2b2016";
@@ -415,6 +437,25 @@ function drawEyebrow(ctx, R, ex, eyeY, expr) {
 
 function drawMouth(ctx, R, expr) {
   const mx = R * 0.28;
+  if (expr === "dizzy") {
+    // slack wobbly mouth with the tongue lolling out
+    ctx.strokeStyle = "#5b3a24";
+    ctx.lineWidth = R * 0.05;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(mx - R * 0.16, R * 0.36);
+    ctx.quadraticCurveTo(mx - R * 0.08, R * 0.31, mx, R * 0.36);
+    ctx.quadraticCurveTo(mx + R * 0.08, R * 0.41, mx + R * 0.16, R * 0.35);
+    ctx.stroke();
+    ctx.fillStyle = "#e0707a";
+    ctx.beginPath();
+    ctx.ellipse(mx + R * 0.05, R * 0.44, R * 0.07, R * 0.09, 0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = OUTLINE;
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+    return;
+  }
   if (expr === "laughing") {
     // a wide, upturned open grin — a real cackle
     ctx.fillStyle = "#7a2020";
