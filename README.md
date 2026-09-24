@@ -1,4 +1,4 @@
-# KURT
+# FfffKurt
 
 He has gas. He has a dream.
 
@@ -37,11 +37,11 @@ live. No build command, no environment variables, no API keys.
 
 For GitHub Pages specifically: Settings → Pages → Source: Deploy from a
 branch → Branch: `main`, folder: `/(root)` → Save. It'll be live at
-`https://scottyfncodes.github.io/fart-flight/` within a minute or two.
+`https://scottyfncodes.github.io/Fart-Flight/` within a minute or two.
 
 ## Home Screen app
 
-KURT installs as a full-screen app: Share → Add to Home Screen on iOS,
+FfffKurt installs as a full-screen app: Share → Add to Home Screen on iOS,
 Install app on Android/Chrome. It launches without browser chrome and
 works offline once it has loaded one time (`sw.js`, network-first, so
 new deploys still arrive on the next launch).
