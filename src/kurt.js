@@ -15,8 +15,9 @@ export function createKurt() {
     buttWigglePhase: 0,
     blinking: false,
     blinkTimer: 2.5,
-    fartExprIndex: 0,
-    fartExprTimer: 0,
+    reactionIndex: -1,
+    reactionHold: 0,
+    reactionCooldown: 0,
     hair: createHair(),
     cosmetic: null,
     dizzy: false,
@@ -35,26 +36,46 @@ export function resetKurt(kurt, x, y, cosmetic) {
   kurt.buttWigglePhase = 0;
   kurt.blinking = false;
   kurt.blinkTimer = rand(1.5, 3);
-  kurt.fartExprIndex = 0;
-  kurt.fartExprTimer = 0;
+  kurt.reactionIndex = -1;
+  kurt.reactionHold = 0;
+  kurt.reactionCooldown = 0;
   kurt.dizzy = false;
   kurt.cosmetic = cosmetic;
   resetHair(kurt.hair, x + PHYSICS.kurtRadius * 0.2, y - PHYSICS.kurtRadius * 1.3);
 }
 
-const FART_EXPRESSIONS = ["surprised", "embarrassed", "laughing"];
+// each new fart gets the next reaction in the rotation; the face and the
+// sound (audio.js FART_FLAVORS / playReaction) both key off these names
+export const REACTIONS = ["giggles", "relief", "surprise", "embarrassed"];
 
+// how long a reaction face lingers after letting go, so quick taps still
+// read, and the minimum gap before the next press moves the rotation on —
+// frantic tapping stays on one reaction instead of strobing faces and
+// stacking voices
+const REACTION_HOLD = 0.45;
+const REACTION_COOLDOWN = 0.55;
+
+// returns the reaction name when this press starts a new one, else null
 export function beginThrust(kurt) {
   kurt.thrusting = true;
   kurt.squash = 1;
-  // always start a fresh fart on the "oh no" face
-  kurt.fartExprIndex = 0;
-  kurt.fartExprTimer = rand(0.22, 0.3);
   burstHair(kurt.hair, 0, -1, 160);
+  if (kurt.reactionCooldown > 0 && kurt.reactionIndex >= 0) {
+    kurt.reactionCooldown = REACTION_COOLDOWN;
+    return null;
+  }
+  kurt.reactionIndex = (kurt.reactionIndex + 1) % REACTIONS.length;
+  kurt.reactionCooldown = REACTION_COOLDOWN;
+  return REACTIONS[kurt.reactionIndex];
 }
 
 export function endThrust(kurt) {
   kurt.thrusting = false;
+  kurt.reactionHold = REACTION_HOLD;
+}
+
+export function currentReaction(kurt) {
+  return kurt.reactionIndex >= 0 ? REACTIONS[kurt.reactionIndex] : null;
 }
 
 export function pulseFart(kurt, intensity) {
@@ -81,11 +102,9 @@ export function updateKurt(kurt, dt, gravityMult, scrollSpeed, thrustMult = 1) {
 
   if (kurt.thrusting) {
     kurt.buttWigglePhase += dt * 46;
-    kurt.fartExprTimer -= dt;
-    if (kurt.fartExprTimer <= 0) {
-      kurt.fartExprIndex = (kurt.fartExprIndex + 1) % FART_EXPRESSIONS.length;
-      kurt.fartExprTimer = rand(0.22, 0.32);
-    }
+  } else {
+    kurt.reactionHold = Math.max(0, kurt.reactionHold - dt);
+    kurt.reactionCooldown = Math.max(0, kurt.reactionCooldown - dt);
   }
 
   kurt.blinkTimer -= dt;
@@ -217,12 +236,18 @@ export function drawKurt(ctx, kurt) {
   ctx.stroke();
 
   const eyeY = -R * 0.08;
-  const expr = kurt.dizzy ? "dizzy" : kurt.thrusting ? FART_EXPRESSIONS[kurt.fartExprIndex] : "happy";
+  const reacting = kurt.thrusting || kurt.reactionHold > 0;
+  const expr = kurt.dizzy ? "dizzy" : reacting && currentReaction(kurt) ? currentReaction(kurt) : "happy";
 
   if (expr === "embarrassed") {
-    ctx.fillStyle = "rgba(230,90,90,0.4)";
+    ctx.fillStyle = "rgba(230,90,90,0.5)";
     ctx.beginPath();
-    ctx.ellipse(R * 0.02, R * 0.14, R * 0.13, R * 0.09, -0.1, 0, Math.PI * 2);
+    ctx.ellipse(R * 0.02, R * 0.14, R * 0.16, R * 0.1, -0.1, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (expr === "giggles") {
+    ctx.fillStyle = "rgba(240,120,110,0.3)";
+    ctx.beginPath();
+    ctx.ellipse(R * 0.04, R * 0.14, R * 0.12, R * 0.08, -0.1, 0, Math.PI * 2);
     ctx.fill();
   }
 
@@ -238,6 +263,8 @@ export function drawKurt(ctx, kurt) {
   ctx.fill();
 
   drawMouth(ctx, R, expr);
+
+  if (expr === "embarrassed") drawSweatDrop(ctx, R, R * 0.4, -R * 0.3);
 
   drawAccessoryOnHead(ctx, R, kurt.cosmetic);
 
@@ -336,8 +363,18 @@ function drawEye(ctx, ex, ey, R, blinking, expr) {
     ctx.stroke();
     return;
   }
-  if (expr === "laughing") {
-    // scrunched shut from laughing, regardless of the blink timer
+  if (expr === "relief") {
+    // eyes closed in bliss: soft downward-bowed lids
+    ctx.strokeStyle = "#2b2016";
+    ctx.lineWidth = 1.8;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.arc(ex, ey - R * 0.03, R * 0.11, Math.PI * 0.15, Math.PI * 0.85);
+    ctx.stroke();
+    return;
+  }
+  if (expr === "giggles") {
+    // scrunched shut from giggling, regardless of the blink timer
     ctx.strokeStyle = "#2b2016";
     ctx.lineWidth = 1.8;
     ctx.lineCap = "round";
@@ -357,7 +394,7 @@ function drawEye(ctx, ex, ey, R, blinking, expr) {
     return;
   }
   let scale = 1;
-  if (expr === "surprised") scale = 1.45;
+  if (expr === "surprise") scale = 1.45;
   else if (expr === "embarrassed") scale = 0.55;
   const ex2 = ex, ey2 = expr === "embarrassed" ? ey + R * 0.02 : ey;
   ctx.fillStyle = "#fff";
@@ -413,7 +450,7 @@ function drawEyebrow(ctx, R, ex, eyeY, expr) {
   ctx.strokeStyle = "rgba(120,70,40,0.5)";
   ctx.lineWidth = 1.5;
   ctx.lineCap = "round";
-  if (expr === "surprised") {
+  if (expr === "surprise") {
     // shot up high, well clear of the eye
     ctx.beginPath();
     ctx.arc(ex, eyeY - R * 0.32, R * 0.13, Math.PI * 1.05, Math.PI * 1.85);
@@ -424,9 +461,14 @@ function drawEyebrow(ctx, R, ex, eyeY, expr) {
     ctx.moveTo(ex - R * 0.15, eyeY - R * 0.1);
     ctx.lineTo(ex + R * 0.13, eyeY - R * 0.2);
     ctx.stroke();
-  } else if (expr === "laughing") {
+  } else if (expr === "giggles") {
     ctx.beginPath();
     ctx.arc(ex, eyeY - R * 0.22, R * 0.13, Math.PI * 1.05, Math.PI * 1.85);
+    ctx.stroke();
+  } else if (expr === "relief") {
+    // relaxed, lifted and gently arched
+    ctx.beginPath();
+    ctx.arc(ex, eyeY - R * 0.2, R * 0.16, Math.PI * 1.2, Math.PI * 1.8);
     ctx.stroke();
   } else {
     ctx.beginPath();
@@ -456,8 +498,19 @@ function drawMouth(ctx, R, expr) {
     ctx.stroke();
     return;
   }
-  if (expr === "laughing") {
-    // a wide, upturned open grin — a real cackle
+  if (expr === "relief") {
+    // a loose, contented "ahhh" — soft open oval with the corners lifted
+    ctx.fillStyle = "#8a3030";
+    ctx.beginPath();
+    ctx.ellipse(mx, R * 0.37, R * 0.13, R * 0.055, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = OUTLINE;
+    ctx.lineWidth = 1.3;
+    ctx.stroke();
+    return;
+  }
+  if (expr === "giggles") {
+    // a wide, upturned open grin — can't hold it in
     ctx.fillStyle = "#7a2020";
     ctx.beginPath();
     ctx.moveTo(mx - R * 0.19, R * 0.28);
@@ -478,7 +531,7 @@ function drawMouth(ctx, R, expr) {
     ctx.quadraticCurveTo(mx + R * 0.15, R * 0.44, mx, R * 0.47);
     ctx.quadraticCurveTo(mx - R * 0.15, R * 0.44, mx - R * 0.19, R * 0.28);
     ctx.stroke();
-  } else if (expr === "surprised") {
+  } else if (expr === "surprise") {
     // small round "oh no" mouth
     ctx.fillStyle = "#7a2020";
     ctx.beginPath();
@@ -504,6 +557,18 @@ function drawMouth(ctx, R, expr) {
     ctx.arc(mx, R * 0.4, R * 0.13, Math.PI * 0.2, Math.PI * 0.8);
     ctx.stroke();
   }
+}
+
+function drawSweatDrop(ctx, R, x, y) {
+  ctx.fillStyle = "rgba(150,210,255,0.9)";
+  ctx.beginPath();
+  ctx.moveTo(x, y - R * 0.12);
+  ctx.quadraticCurveTo(x + R * 0.08, y + R * 0.01, x, y + R * 0.05);
+  ctx.quadraticCurveTo(x - R * 0.08, y + R * 0.01, x, y - R * 0.12);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(70,130,190,0.7)";
+  ctx.lineWidth = 1;
+  ctx.stroke();
 }
 
 function drawArmCurve(ctx, R, sx, sy, cx, cy, ex, ey) {

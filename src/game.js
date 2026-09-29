@@ -9,7 +9,7 @@ import {
   updateParticles,
   drawParticles,
 } from "./particles.js";
-import { createKurt, resetKurt, beginThrust, endThrust, pulseFart, updateKurt, updateKurtHair, getHitCircle, getButtPosition, drawKurt } from "./kurt.js";
+import { createKurt, resetKurt, beginThrust, endThrust, currentReaction, pulseFart, updateKurt, updateKurtHair, getHitCircle, getButtPosition, drawKurt } from "./kurt.js";
 import {
   createObstacleField,
   resetObstacleField,
@@ -150,7 +150,7 @@ export function createGame(canvas, stageEl) {
   function fartTick(intensity) {
     const clamped = clamp(intensity, 0.3, 1.6);
     registerFart(scoring, clamped);
-    audio.playFart(clamped);
+    audio.playFart(clamped, currentReaction(kurt));
     const butt = getButtPosition(kurt);
     spawnFartBurst(particles, butt.x, butt.y, clamped, 165);
     pulseFart(kurt, clamped);
@@ -187,7 +187,7 @@ export function createGame(canvas, stageEl) {
     audio.startWind();
     audio.setMusicIntensity(1, 0);
     storage.addRun();
-    beginThrust(kurt);
+    startThrust();
     fartTickTimer = 0;
     fartTick(0.9);
   }
@@ -321,8 +321,14 @@ export function createGame(canvas, stageEl) {
       return;
     }
     if (state !== "playing") return;
-    beginThrust(kurt);
+    startThrust();
     fartTickTimer = 0;
+  }
+
+  // a new fart gets Kurt's next reaction, voiced to match his face
+  function startThrust() {
+    const reaction = beginThrust(kurt);
+    if (reaction) audio.playReaction(reaction);
   }
 
   function handleUp() {

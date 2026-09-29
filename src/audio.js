@@ -126,17 +126,30 @@ function categoryForIntensity(intensity) {
   return "blast";
 }
 
-export function playFart(intensity = 1) {
+// Each of Kurt's reactions colours the farts under it, so what you hear
+// matches the face: bubbly giggle toots, long low sighs of relief, sharp
+// upward yelps of surprise, and small quavering embarrassed squeaks.
+const FART_FLAVORS = {
+  giggles: { pitch: [1.1, 1.45], dur: 0.7, wobble: 0.75, wobbleUp: [1.2, 1.5], filter: 1.15, gain: 0.95 },
+  relief: { pitch: [0.68, 0.9], dur: 1.45, wobble: 0.05, wobbleUp: [1.05, 1.1], filter: 0.75, gain: 0.9 },
+  surprise: { pitch: [0.95, 1.3], dur: 0.8, wobble: 1, wobbleUp: [1.45, 1.8], filter: 1.35, gain: 1.05 },
+  embarrassed: { pitch: [1.3, 1.65], dur: 0.85, wobble: 0.9, wobbleUp: [1.08, 1.2], filter: 1.1, gain: 0.72 },
+};
+const DEFAULT_FLAVOR = { pitch: [0.76, 1.32], dur: 1, wobble: 0.35, wobbleUp: [1.15, 1.4], filter: 1, gain: 1 };
+
+export function playFart(intensity = 1, reaction = null) {
   const c = ensureContext();
   if (!c) return;
   const cat = categoryForIntensity(clamp(intensity, 0, 1.4));
-  const p = FART_PRESETS[cat];
+  const base = FART_PRESETS[cat];
+  const fl = FART_FLAVORS[reaction] || DEFAULT_FLAVOR;
+  const p = { ...base, gain: base.gain * fl.gain, filter: base.filter * fl.filter };
   const t0 = c.currentTime;
-  const dur = rand(p.duration[0], p.duration[1]);
+  const dur = rand(p.duration[0], p.duration[1]) * fl.dur;
   // a wide overall pitch multiplier on top of the preset's own range, so
   // farts land noticeably sharp or flat instead of always landing neatly
   // inside their category's "normal" band
-  const pitchMult = rand(0.76, 1.32);
+  const pitchMult = rand(fl.pitch[0], fl.pitch[1]);
   const startFreq = rand(p.startFreq[0], p.startFreq[1]) * pitchMult;
   const endFreq = rand(p.endFreq[0], p.endFreq[1]) * pitchMult;
   // the buzz gets its own independent detune so it sometimes clashes
@@ -158,11 +171,12 @@ export function playFart(intensity = 1) {
   const osc = c.createOscillator();
   osc.type = "sawtooth";
   osc.frequency.setValueAtTime(startFreq, t0);
-  // roughly a third of farts wobble mid-note instead of sliding cleanly
-  // from start pitch to end pitch, like the pitch caught a hiccup
-  if (Math.random() < 0.35) {
+  // some farts wobble mid-note instead of sliding cleanly from start pitch
+  // to end pitch, like the pitch caught a hiccup (how often and how far
+  // depends on the reaction flavour)
+  if (Math.random() < fl.wobble) {
     const wobbleT = t0 + dur * rand(0.3, 0.6);
-    osc.frequency.exponentialRampToValueAtTime(Math.max(20, startFreq * rand(1.15, 1.4)), wobbleT);
+    osc.frequency.exponentialRampToValueAtTime(Math.max(20, startFreq * rand(fl.wobbleUp[0], fl.wobbleUp[1])), wobbleT);
     osc.frequency.exponentialRampToValueAtTime(Math.max(20, endFreq), t0 + dur);
   } else {
     osc.frequency.exponentialRampToValueAtTime(Math.max(20, endFreq), t0 + dur);
@@ -192,6 +206,107 @@ export function playFart(intensity = 1) {
   noiseGain.connect(filter);
   noise.start(t0);
   noise.stop(t0 + dur * 0.6 + 0.02);
+}
+
+// --- Kurt's voice -------------------------------------------------------
+// A tiny formant synth: a buzzy glottal source through two bandpass
+// filters tuned to a vowel's first two formants, plus a breath of noise.
+const VOWELS = {
+  ee: [300, 2300],
+  ah: [750, 1150],
+  oh: [520, 880],
+  uh: [620, 1200],
+};
+
+function voice(c, t0, { vowel, f0, f1 = f0, dur, gain = 0.16, breath = 0.2, vibrato = 0, attack = 0.015 }) {
+  const [F1, F2] = VOWELS[vowel];
+  const out = c.createGain();
+  out.gain.setValueAtTime(0.0001, t0);
+  out.gain.exponentialRampToValueAtTime(gain, t0 + attack);
+  out.gain.setValueAtTime(gain, t0 + Math.max(attack, dur * 0.55));
+  out.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  out.connect(masterGain);
+
+  const src = c.createOscillator();
+  src.type = "sawtooth";
+  src.frequency.setValueAtTime(f0, t0);
+  src.frequency.exponentialRampToValueAtTime(Math.max(40, f1), t0 + dur);
+  if (vibrato > 0) {
+    const lfo = c.createOscillator();
+    const lfoGain = c.createGain();
+    lfo.frequency.value = 7;
+    lfoGain.gain.value = f0 * vibrato;
+    lfo.connect(lfoGain);
+    lfoGain.connect(src.frequency);
+    lfo.start(t0);
+    lfo.stop(t0 + dur + 0.02);
+  }
+  [[F1, 1], [F2, 0.45]].forEach(([freq, amt]) => {
+    const bp = c.createBiquadFilter();
+    bp.type = "bandpass";
+    bp.frequency.value = freq;
+    bp.Q.value = 6;
+    const g = c.createGain();
+    g.gain.value = amt * 3;
+    src.connect(bp);
+    bp.connect(g);
+    g.connect(out);
+  });
+  src.start(t0);
+  src.stop(t0 + dur + 0.02);
+
+  if (breath > 0) {
+    const n = noiseSource(c);
+    const hp = c.createBiquadFilter();
+    hp.type = "bandpass";
+    hp.frequency.value = F2;
+    hp.Q.value = 1.2;
+    const ng = envGain(c, 0.01, dur, breath * gain * 2, t0);
+    n.connect(hp);
+    hp.connect(ng);
+    ng.connect(masterGain);
+    n.start(t0);
+    n.stop(t0 + dur + 0.02);
+  }
+}
+
+let lastReactionAt = -1;
+
+export function playReaction(reaction) {
+  const c = ensureContext();
+  if (!c) return;
+  // never let voices pile up on top of each other
+  if (lastReactionAt >= 0 && c.currentTime - lastReactionAt < 0.4) return;
+  lastReactionAt = c.currentTime;
+  // lands just after the fart's attack, like he's reacting to it
+  const t0 = c.currentTime + 0.09;
+  const k = rand(0.92, 1.1);
+  switch (reaction) {
+    case "giggles": {
+      // "hee-hee-hee-hee", tumbling down in pitch
+      const n = 3 + Math.floor(Math.random() * 2);
+      for (let i = 0; i < n; i++) {
+        const f = (640 - i * 45) * k;
+        voice(c, t0 + i * 0.1, { vowel: "ee", f0: f * 1.08, f1: f * 0.94, dur: 0.075, gain: 0.13, breath: 0.45, attack: 0.008 });
+      }
+      break;
+    }
+    case "relief":
+      // a long, breathy, sinking "ahhhh"
+      voice(c, t0 + 0.05, { vowel: "ah", f0: 260 * k, f1: 175 * k, dur: 0.75, gain: 0.12, breath: 0.6, vibrato: 0.015, attack: 0.08 });
+      break;
+    case "surprise":
+      // a quick upward "oh!"
+      voice(c, t0, { vowel: "oh", f0: 330 * k, f1: 620 * k, dur: 0.2, gain: 0.16, breath: 0.15, attack: 0.01 });
+      break;
+    case "embarrassed":
+      // a sheepish, falling "uh-oh"
+      voice(c, t0, { vowel: "uh", f0: 300 * k, f1: 290 * k, dur: 0.13, gain: 0.12, breath: 0.2 });
+      voice(c, t0 + 0.17, { vowel: "oh", f0: 235 * k, f1: 200 * k, dur: 0.22, gain: 0.11, breath: 0.2, vibrato: 0.02 });
+      break;
+    default:
+      break;
+  }
 }
 
 export function startWind() {
