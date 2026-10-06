@@ -58,9 +58,9 @@ export function drawIcon(ctx, size, { zoom = 1 } = {}) {
   // visual centre (between the head and the tucked legs) on the icon's
   // centre. The physics origin sits a little below and behind that.
   const R = 26;
-  const scale = size * 0.0119 * zoom;
+  const scale = size * 0.0112 * zoom;
   const originX = size * 0.51 - (R * 0.12) * scale;
-  const originY = size * 0.47 + (R * 0.02) * scale;
+  const originY = size * 0.44 + (R * 0.02) * scale;
 
   // sunburst radiating from Kurt
   ctx.save();
