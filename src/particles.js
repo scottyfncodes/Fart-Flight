@@ -9,19 +9,24 @@ const BIT_GREENS = ["#8bc34a", "#7cb342", "#9ccc65", "#6fa83a"];
 export function spawnFartBurst(sys, x, y, intensity, angleDeg = 165) {
   const count = Math.round(4 + intensity * 5);
   const baseAngle = (angleDeg * Math.PI) / 180;
+  const dirX = Math.cos(baseAngle);
+  const dirY = Math.sin(baseAngle);
   for (let i = 0; i < count; i++) {
-    const spread = (rand(-22, 22) * Math.PI) / 180;
+    // a narrow cone out of the vent: the puffs leave as a tight jet and
+    // only spread as drag slows them, so the cloud visibly billows out
+    // from one point instead of appearing as a ready-made blob
+    const spread = (rand(-14, 14) * Math.PI) / 180;
     const a = baseAngle + spread;
-    // a hard initial kick away from the body so the cloud is already
-    // clearing Kurt's face by the first rendered frame, drag takes over
-    // from there to let it drift and billow
-    const speed = rand(70, 150) * (0.55 + intensity * 0.55);
+    const speed = rand(110, 200) * (0.55 + intensity * 0.55);
+    // stagger the puffs a little way down the jet so the first frame
+    // already reads as a stream leaving the body
+    const along = rand(0, 10);
     sys.puffs.push({
-      x: x + rand(-4, 4),
-      y: y + rand(-4, 4),
+      x: x + dirX * along + rand(-1.5, 1.5),
+      y: y + dirY * along + rand(-1.5, 1.5),
       vx: Math.cos(a) * speed,
       vy: Math.sin(a) * speed,
-      r: rand(5, 10) * (0.7 + intensity * 0.7),
+      r: rand(3, 6.5) * (0.7 + intensity * 0.7),
       life: 0,
       maxLife: rand(0.65, 1.1),
       spin: rand(-1, 1),
@@ -29,14 +34,15 @@ export function spawnFartBurst(sys, x, y, intensity, angleDeg = 165) {
   }
   const bitCount = Math.round(5 + intensity * 6);
   for (let i = 0; i < bitCount; i++) {
-    const spread = (rand(-34, 34) * Math.PI) / 180;
+    const spread = (rand(-24, 24) * Math.PI) / 180;
     const a = baseAngle + spread;
-    const speed = rand(90, 190) * (0.55 + intensity * 0.6);
+    const speed = rand(120, 220) * (0.55 + intensity * 0.6);
     sys.bits.push({
-      x, y,
+      x: x + dirX * rand(0, 4),
+      y: y + dirY * rand(0, 4),
       vx: Math.cos(a) * speed,
       vy: Math.sin(a) * speed,
-      r: rand(1.8, 3.6),
+      r: rand(1.6, 3.2),
       life: 0,
       maxLife: rand(0.4, 0.65),
       color: choose(BIT_GREENS),
@@ -90,7 +96,7 @@ export function drawParticles(ctx, sys) {
     ctx.globalAlpha = (1 - t) * 0.55;
     ctx.fillStyle = "#e4f0d4";
     ctx.beginPath();
-    ctx.arc(p.x, p.y, p.r * (0.7 + t * 0.8), 0, Math.PI * 2);
+    ctx.arc(p.x, p.y, p.r * (0.6 + t * 1.9), 0, Math.PI * 2);
     ctx.fill();
   }
   for (const p of sys.bits) {

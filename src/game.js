@@ -152,7 +152,7 @@ export function createGame(canvas, stageEl) {
     registerFart(scoring, clamped);
     audio.playFart(clamped, currentReaction(kurt));
     const butt = getButtPosition(kurt);
-    spawnFartBurst(particles, butt.x, butt.y, clamped, 165);
+    spawnFartBurst(particles, butt.x, butt.y, clamped, butt.angle);
     pulseFart(kurt, clamped);
     if (clamped > 0.85) triggerShake(0.12, 4 * clamped);
   }
@@ -348,7 +348,7 @@ export function createGame(canvas, stageEl) {
       } else {
         beginThrust(kurt);
         const butt = getButtPosition(kurt);
-        spawnFartBurst(particles, butt.x, butt.y, 0.6, 165);
+        spawnFartBurst(particles, butt.x, butt.y, 0.6, butt.angle);
         idleTapTimer = rand(0.5, 0.8);
       }
     }
@@ -374,7 +374,7 @@ export function createGame(canvas, stageEl) {
     idleTapTimer -= dt;
     if (idleTapTimer <= 0) {
       const butt = getButtPosition(kurt);
-      spawnFartBurst(particles, butt.x, butt.y, 0.35, 165);
+      spawnFartBurst(particles, butt.x, butt.y, 0.35, butt.angle);
       idleTapTimer = rand(0.35, 0.6);
     }
     updateBackground(background, dt, SCROLL.baseSpeed, 0);
@@ -652,7 +652,7 @@ export function createGame(canvas, stageEl) {
     audio.initAudio();
     audio.playFart(0.5);
     const butt = getButtPosition(kurt);
-    spawnFartBurst(particles, butt.x, butt.y, 0.9, 165);
+    spawnFartBurst(particles, butt.x, butt.y, 0.9, butt.angle);
     spawnSparkles(particles, kurt.x, kurt.y, currentCosmetic().accent, 12);
     renderCosmetics();
   }
