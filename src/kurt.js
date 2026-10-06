@@ -134,16 +134,24 @@ export function getHitCircle(kurt) {
   return { x: kurt.x, y: kurt.y, r: PHYSICS.kurtRadius * 0.72 };
 }
 
+// where the gas leaves Kurt: the bottom of the crack on the underside of
+// the butt, plus the direction it jets out (world degrees). The jet points
+// away from the butt in Kurt's own frame, so it swings with his rotation:
+// nose-up it fires down, nose-down it fires back and up.
+const VENT_X = -0.44;
+const VENT_Y = 0.8;
+const VENT_ANGLE = 142; // local: back and down, straight out of the butt
 export function getButtPosition(kurt) {
   const R = PHYSICS.kurtRadius;
   const rad = (kurt.rotation * Math.PI) / 180;
   const cos = Math.cos(rad);
   const sin = Math.sin(rad);
-  const localX = -R * 0.5;
-  const localY = R * 0.58;
+  const localX = R * VENT_X;
+  const localY = R * VENT_Y;
   return {
     x: kurt.x + localX * cos - localY * sin,
     y: kurt.y + localX * sin + localY * cos,
+    angle: VENT_ANGLE + kurt.rotation,
   };
 }
 
@@ -271,18 +279,18 @@ export function drawKurt(ctx, kurt) {
 //   near foot -> near arm -> clasped hands
 // Limbs are [startX, startY, controlX, controlY, endX, endY, width] in R.
 const NEAR_THIGH = [-0.24, 0.56, 0.18, 0.14, 0.7, -0.14, 0.42];
-const NEAR_SHIN = [0.66, -0.08, 0.62, 0.4, 0.5, 0.88, 0.3];
-const FAR_SHIN = [0.56, -0.04, 0.52, 0.44, 0.4, 0.92, 0.28];
+const NEAR_SHIN = [0.66, -0.08, 0.6, 0.4, 0.47, 0.88, 0.3];
+const FAR_SHIN = [0.6, -0.06, 0.57, 0.42, 0.45, 0.9, 0.28];
 const NEAR_ARM = [0.02, -0.3, 0.16, 0.76, 0.66, 0.26, 0.26];
 const LIMB_EDGE = 3.2;
 
 function drawTuckBody(ctx, R, wiggle) {
   ctx.lineJoin = "round";
 
-  // far leg, in shade: a second shin and foot just behind the near leg,
-  // so the tuck clearly has both legs hugged up
+  // far leg, in shade: a second shin and foot pressed close behind the
+  // near leg, so the tuck clearly has both legs hugged up together
   drawLimb(ctx, R, FAR_SHIN, SKIN_SHADE);
-  drawFoot(ctx, R, 0.54, 1.06, 0.5, SKIN_SHADE);
+  drawFoot(ctx, R, 0.6, 1.04, 0.5, SKIN_SHADE);
 
   torsoPath(ctx, R);
   ctx.fillStyle = SKIN;
@@ -295,7 +303,7 @@ function drawTuckBody(ctx, R, wiggle) {
   // near leg: thigh hugged up to the chest, shin hanging from the knee
   drawLimb(ctx, R, NEAR_THIGH, SKIN);
   drawLimb(ctx, R, NEAR_SHIN, SKIN);
-  drawFoot(ctx, R, 0.66, 1.0, 0.5, SKIN);
+  drawFoot(ctx, R, 0.64, 1.0, 0.5, SKIN);
 
   // near arm: down the side of the thigh to a low elbow, then the forearm
   // reaches up and forward to grip the shin just below the knee
@@ -318,13 +326,29 @@ function torsoPath(ctx, R) {
 }
 
 function drawButtCrack(ctx, R, wiggle) {
+  // a clean, defined crack down the back of the butt: a soft wide shadow
+  // with a crisp darker line inside it, curving in at the top and flaring
+  // very slightly at the bottom where the gas comes out; plus a soft
+  // shade under the cheek so the butt reads as round. Nothing more.
   const cx = -R * 0.5 + wiggle;
-  ctx.strokeStyle = "rgba(140,80,50,0.45)";
-  ctx.lineWidth = 1.6;
   ctx.lineCap = "round";
+  ctx.strokeStyle = "rgba(140,80,50,0.28)";
+  ctx.lineWidth = 3.4;
   ctx.beginPath();
-  ctx.moveTo(cx, R * 0.4);
-  ctx.quadraticCurveTo(cx - R * 0.02, R * 0.56, cx + R * 0.02, R * 0.72);
+  ctx.moveTo(cx + R * 0.02, R * 0.34);
+  ctx.quadraticCurveTo(cx - R * 0.04, R * 0.56, cx + R * 0.05, R * 0.78);
+  ctx.stroke();
+  ctx.strokeStyle = "rgba(120,66,38,0.7)";
+  ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  ctx.moveTo(cx + R * 0.02, R * 0.36);
+  ctx.quadraticCurveTo(cx - R * 0.04, R * 0.56, cx + R * 0.05, R * 0.77);
+  ctx.stroke();
+
+  ctx.strokeStyle = "rgba(150,90,55,0.3)";
+  ctx.lineWidth = 2.2;
+  ctx.beginPath();
+  ctx.arc(cx - R * 0.08, R * 0.5, R * 0.3, Math.PI * 0.35, Math.PI * 0.8);
   ctx.stroke();
 }
 
