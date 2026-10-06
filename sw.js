@@ -1,15 +1,15 @@
 // Offline support for the Home Screen app. Network-first, so a deploy is
 // picked up on the next launch; the cache only answers when offline.
-const CACHE = "kurt-v4";
+const CACHE = "kurt-v5";
 const SHELL = [
   "./",
   "index.html",
   "styles.css",
   "manifest.webmanifest",
   "fonts/luckiest-guy-latin.woff2",
-  "icons/icon-192.png",
-  "icons/apple-touch-icon.png",
-  "icons/favicon-32.png",
+  "icons/icon-192.png?v=5",
+  "icons/apple-touch-icon.png?v=5",
+  "icons/favicon-32.png?v=5",
   "src/audio.js",
   "src/background.js",
   "src/collision.js",
