@@ -266,21 +266,21 @@ export function drawKurt(ctx, kurt) {
 // Built straight from the reference photos: the body stays upright with
 // a rounded back, the knees are hugged up to chest height so they lead in
 // front of the chin, the shins hang almost straight down from the knees
-// so the feet dangle below the butt, toes forward, with sky showing between
-// the calves and the belly, and the near arm runs down the side of the thigh to a
+// so the feet dangle just in front of the butt, toes forward, with the
+// calves tucked right up against it, and the near arm runs down the side of the thigh to a
 // low elbow with the forearm crossing the shin just under the knee,
 // hands clasped on the shin.
 //
 // Readability over anatomy: every piece is its own fully outlined
 // capsule, layered back to front so each overlap draws a clean edge, and
-// the layout leaves real negative space (between shin and belly, between
-// chin and knee) so the silhouette alone says "tucked" at game size.
+// the layout leaves real negative space (between chin and knee, and
+// in front of the shins) so the silhouette alone says "tucked" at game size.
 //   far shin + far foot (shade) -> torso -> near thigh -> near shin ->
 //   near foot -> near arm -> clasped hands
 // Limbs are [startX, startY, controlX, controlY, endX, endY, width] in R.
 const NEAR_THIGH = [-0.24, 0.56, 0.18, 0.14, 0.7, -0.14, 0.42];
-const NEAR_SHIN = [0.66, -0.08, 0.6, 0.4, 0.47, 0.88, 0.3];
-const FAR_SHIN = [0.6, -0.06, 0.57, 0.42, 0.45, 0.9, 0.28];
+const NEAR_SHIN = [0.66, -0.08, 0.58, 0.42, 0.4, 0.88, 0.3];
+const FAR_SHIN = [0.6, -0.06, 0.54, 0.44, 0.36, 0.9, 0.28];
 const NEAR_ARM = [0.02, -0.3, 0.16, 0.76, 0.66, 0.26, 0.26];
 const LIMB_EDGE = 3.2;
 
@@ -290,7 +290,7 @@ function drawTuckBody(ctx, R, wiggle) {
   // far leg, in shade: a second shin and foot pressed close behind the
   // near leg, so the tuck clearly has both legs hugged up together
   drawLimb(ctx, R, FAR_SHIN, SKIN_SHADE);
-  drawFoot(ctx, R, 0.6, 1.04, 0.5, SKIN_SHADE);
+  drawFoot(ctx, R, 0.52, 1.04, 0.5, SKIN_SHADE);
 
   torsoPath(ctx, R);
   ctx.fillStyle = SKIN;
@@ -303,7 +303,7 @@ function drawTuckBody(ctx, R, wiggle) {
   // near leg: thigh hugged up to the chest, shin hanging from the knee
   drawLimb(ctx, R, NEAR_THIGH, SKIN);
   drawLimb(ctx, R, NEAR_SHIN, SKIN);
-  drawFoot(ctx, R, 0.64, 1.0, 0.5, SKIN);
+  drawFoot(ctx, R, 0.57, 1.0, 0.5, SKIN);
 
   // near arm: down the side of the thigh to a low elbow, then the forearm
   // reaches up and forward to grip the shin just below the knee
@@ -313,14 +313,15 @@ function drawTuckBody(ctx, R, wiggle) {
 
 function torsoPath(ctx, R) {
   // an upright bean: tall rounded back from the shoulders down to a round
-  // butt, a narrow belly so the hanging shins clear it
+  // butt whose underside runs forward to meet the back of the calves, so
+  // no sky shows between the butt and the hanging shins
   ctx.beginPath();
   ctx.moveTo(R * 0.2, -R * 0.42);
   ctx.quadraticCurveTo(R * 0.02, -R * 0.5, -R * 0.14, -R * 0.46);
   ctx.quadraticCurveTo(-R * 0.8, -R * 0.3, -R * 0.62, R * 0.3);
-  ctx.quadraticCurveTo(-R * 0.7, R * 0.86, -R * 0.3, R * 0.86);
-  ctx.quadraticCurveTo(-R * 0.04, R * 0.84, R * 0.06, R * 0.6);
-  ctx.quadraticCurveTo(R * 0.3, R * 0.2, R * 0.38, -R * 0.24);
+  ctx.quadraticCurveTo(-R * 0.7, R * 0.88, -R * 0.3, R * 0.88);
+  ctx.quadraticCurveTo(R * 0.1, R * 0.92, R * 0.32, R * 0.72);
+  ctx.quadraticCurveTo(R * 0.44, R * 0.24, R * 0.38, -R * 0.24);
   ctx.quadraticCurveTo(R * 0.36, -R * 0.42, R * 0.2, -R * 0.42);
   ctx.closePath();
 }
@@ -331,6 +332,11 @@ function drawButtCrack(ctx, R, wiggle) {
   // very slightly at the bottom where the gas comes out; plus a soft
   // shade under the cheek so the butt reads as round. Nothing more.
   const cx = -R * 0.5 + wiggle;
+  // keep every stroke inside the body outline so nothing pokes out past
+  // the edge of the butt
+  ctx.save();
+  torsoPath(ctx, R);
+  ctx.clip();
   ctx.lineCap = "round";
   ctx.strokeStyle = "rgba(140,80,50,0.28)";
   ctx.lineWidth = 3.4;
@@ -350,6 +356,7 @@ function drawButtCrack(ctx, R, wiggle) {
   ctx.beginPath();
   ctx.arc(cx - R * 0.08, R * 0.5, R * 0.3, Math.PI * 0.35, Math.PI * 0.8);
   ctx.stroke();
+  ctx.restore();
 }
 
 function drawClaspedHands(ctx, R, cx, cy) {
