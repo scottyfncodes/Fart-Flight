@@ -163,26 +163,7 @@ export function drawKurt(ctx, kurt) {
   ctx.rotate((kurt.rotation * Math.PI) / 180);
   ctx.scale(kurt.scaleX, kurt.scaleY);
 
-  // back arm: wraps from the shoulder, behind the body, down to the
-  // clasped hands gripping the shins
-  drawArmCurve(ctx, R, -R * 0.08, -R * 0.4, -R * 0.46, -R * 0.02, R * 0.32, R * 0.42);
-
-  // the whole curled torso-to-shin mass as one continuous silhouette
-  // instead of overlapping ellipses — this is what actually reads as a
-  // single tucked body rather than a body with balls stuck to it
-  drawBodySilhouette(ctx, R);
-
-  const wiggle = kurt.thrusting ? Math.sin(kurt.buttWigglePhase) * R * 0.04 : 0;
-  drawButtCrack(ctx, R, wiggle);
-
-  drawFoot(ctx, R, R * 0.42, R * 0.48, 0.4);
-  drawFoot(ctx, R, R * 0.28, R * 0.58, 0.85);
-
-  // front arm: wraps over the top of the thigh and down toward the shin,
-  // staying inside the knee's own edge so the knee still reads as the
-  // forward-most point instead of getting painted over by the arm
-  drawArmCurve(ctx, R, R * 0.14, -R * 0.4, R * 0.3, -R * 0.04, R * 0.36, R * 0.4);
-  drawClaspedHands(ctx, R, R * 0.34, R * 0.44);
+  drawTuckBody(ctx, R, kurt.thrusting ? Math.sin(kurt.buttWigglePhase) * R * 0.04 : 0);
 
   drawAccessoryBehindHead(ctx, R, kurt.cosmetic);
 
@@ -273,50 +254,101 @@ export function drawKurt(ctx, kurt) {
   ctx.restore();
 }
 
-function drawBodySilhouette(ctx, R) {
-  // a single closed loop: shoulder -> down the curved back -> under the
-  // butt -> forward along the underside of the thigh/shin -> up the front
-  // of the knee -> back over the top of the thigh -> shoulder. One shape,
-  // one outline, reads as a curled body instead of a stack of balls.
-  ctx.fillStyle = SKIN;
-  ctx.beginPath();
-  ctx.moveTo(-R * 0.08, -R * 0.5);
-  ctx.quadraticCurveTo(-R * 0.58, -R * 0.35, -R * 0.5, R * 0.15);
-  ctx.quadraticCurveTo(-R * 0.6, R * 0.5, -R * 0.15, R * 0.62);
-  ctx.quadraticCurveTo(R * 0.15, R * 0.7, R * 0.3, R * 0.55);
-  ctx.quadraticCurveTo(R * 0.38, R * 0.4, R * 0.62, R * 0.06);
-  ctx.quadraticCurveTo(R * 0.4, -R * 0.18, R * 0.22, -R * 0.36);
-  ctx.quadraticCurveTo(R * 0.1, -R * 0.48, -R * 0.08, -R * 0.5);
-  ctx.closePath();
-  ctx.fill();
+// The flying tuck. Kurt faces +x. Thighs fold up toward the chin, shins
+// fold back under the thighs, feet tuck underneath, and the near arm wraps
+// over the thigh to grip the shin under the knee.
+//
+// Readability over anatomy: the silhouette is built from a few big,
+// deliberately separated masses with sky showing between them —
+//   * a round back/butt hump behind,
+//   * a chunky thigh thrown up and forward with the knee as the leading
+//     point under the chin,
+//   * a shin folded back under it at a visible angle, leaving a wedge of
+//     background between hamstring and calf,
+//   * feet hanging below, clear of the butt,
+//   * an arm crossing the thigh to clasped hands on the shin.
+// The torso, near thigh and near shin share one outline pass and one fill
+// pass so they read as a single clean body, with the shin in shade and a
+// few crease lines doing the internal separation. The far leg, the feet,
+// the arm and the hands are separate outlined pieces.
+// Limbs are [startX, startY, controlX, controlY, endX, endY, width] in R.
+const NEAR_THIGH = [-0.34, 0.36, 0.2, 0.1, 0.84, -0.04, 0.44];
+const NEAR_SHIN = [0.82, 0.0, 0.66, 0.4, 0.38, 0.76, 0.3];
+const FAR_SHIN = [0.7, 0.12, 0.56, 0.52, 0.3, 0.86, 0.28];
+const NEAR_ARM = [0.0, -0.28, 0.14, 0.4, 0.56, 0.56, 0.26];
+const LIMB_EDGE = 3.2;
+
+function drawTuckBody(ctx, R, wiggle) {
+  // far leg, in shade: a second knee and a second foot peeking out just
+  // below and behind the near leg, so the tuck clearly has both legs up
+  strokeLimb(ctx, R, FAR_SHIN, OUTLINE, LIMB_EDGE);
+  strokeLimb(ctx, R, FAR_SHIN, SKIN_SHADE, 0);
+  drawFoot(ctx, R, 0.04, 0.96, 0.12, SKIN_SHADE);
+
+  // torso + near thigh + near shin as one silhouette
+  ctx.lineJoin = "round";
+  torsoPath(ctx, R);
   ctx.strokeStyle = OUTLINE;
+  ctx.lineWidth = LIMB_EDGE;
+  ctx.stroke();
+  strokeLimb(ctx, R, NEAR_THIGH, OUTLINE, LIMB_EDGE);
+  strokeLimb(ctx, R, NEAR_SHIN, OUTLINE, LIMB_EDGE);
+  torsoPath(ctx, R);
+  ctx.fillStyle = SKIN;
+  ctx.fill();
+  strokeLimb(ctx, R, NEAR_SHIN, SKIN_SHADE, 0);
+  strokeLimb(ctx, R, NEAR_THIGH, SKIN, 0);
+
+  // creases carving the limbs out of the silhouette: the top of the thigh
+  // against the chest, the glute fold at the hip, the back of the knee
+  ctx.strokeStyle = "rgba(150,90,55,0.55)";
   ctx.lineWidth = 2;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.12, R * 0.14);
+  ctx.quadraticCurveTo(R * 0.3, -R * 0.1, R * 0.66, -R * 0.22);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.3, R * 0.16);
+  ctx.quadraticCurveTo(-R * 0.5, R * 0.36, -R * 0.34, R * 0.58);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(R * 0.62, R * 0.22);
+  ctx.quadraticCurveTo(R * 0.76, R * 0.26, R * 0.9, R * 0.14);
   ctx.stroke();
 
-  // knee crease, separating thigh from shin
-  ctx.strokeStyle = "rgba(150,90,55,0.4)";
-  ctx.lineWidth = 1.7;
-  ctx.beginPath();
-  ctx.moveTo(R * 0.52, -R * 0.14);
-  ctx.quadraticCurveTo(R * 0.46, R * 0.16, R * 0.3, R * 0.4);
-  ctx.stroke();
+  drawFoot(ctx, R, 0.14, 0.82, 0.1, SKIN);
+  drawButtCrack(ctx, R, wiggle);
 
-  // belly fold where the torso meets the tucked thigh
-  ctx.strokeStyle = "rgba(150,90,55,0.35)";
-  ctx.lineWidth = 1.6;
+  // near arm: drops from the shoulder over the thigh, then the forearm
+  // reaches forward to grip the shin below the knee
+  strokeLimb(ctx, R, NEAR_ARM, OUTLINE, LIMB_EDGE);
+  strokeLimb(ctx, R, NEAR_ARM, SKIN, 0);
+  drawClaspedHands(ctx, R, R * 0.62, R * 0.58);
+}
+
+function torsoPath(ctx, R) {
+  // a compact bean folded forward: a strong rounded back from the
+  // shoulders down to a round butt, the chest leaning into the thigh
   ctx.beginPath();
-  ctx.arc(R * 0.05, -R * 0.1, R * 0.34, 0.4, 1.9);
-  ctx.stroke();
+  ctx.moveTo(R * 0.2, -R * 0.42);
+  ctx.quadraticCurveTo(R * 0.02, -R * 0.5, -R * 0.14, -R * 0.44);
+  ctx.quadraticCurveTo(-R * 0.84, -R * 0.3, -R * 0.66, R * 0.2);
+  ctx.quadraticCurveTo(-R * 0.68, R * 0.62, -R * 0.34, R * 0.6);
+  ctx.quadraticCurveTo(-R * 0.1, R * 0.58, R * 0.1, R * 0.42);
+  ctx.quadraticCurveTo(R * 0.42, R * 0.1, R * 0.4, -R * 0.24);
+  ctx.quadraticCurveTo(R * 0.36, -R * 0.42, R * 0.2, -R * 0.42);
+  ctx.closePath();
 }
 
 function drawButtCrack(ctx, R, wiggle) {
-  const cx = -R * 0.42 + wiggle;
+  const cx = -R * 0.46 + wiggle;
   ctx.strokeStyle = "rgba(140,80,50,0.45)";
   ctx.lineWidth = 1.6;
   ctx.lineCap = "round";
   ctx.beginPath();
-  ctx.moveTo(cx, R * 0.14);
-  ctx.quadraticCurveTo(cx - R * 0.01, R * 0.3, cx, R * 0.46);
+  ctx.moveTo(cx, R * 0.2);
+  ctx.quadraticCurveTo(cx - R * 0.02, R * 0.36, cx + R * 0.02, R * 0.52);
   ctx.stroke();
 }
 
@@ -338,13 +370,28 @@ function drawClaspedHands(ctx, R, cx, cy) {
   ctx.stroke();
 }
 
-function drawFoot(ctx, R, cx, cy, rot) {
-  ctx.fillStyle = SKIN;
+// a foot tucked under the folded leg: heel at the ankle, toes pointing
+// toward the tail so the tuck has a clear trailing edge
+function drawFoot(ctx, R, cx, cy, rot, fill) {
+  ctx.fillStyle = fill;
   ctx.beginPath();
-  ctx.ellipse(cx, cy, R * 0.19, R * 0.12, rot, 0, Math.PI * 2);
+  ctx.ellipse(R * cx, R * cy, R * 0.25, R * 0.12, rot, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = OUTLINE;
-  ctx.lineWidth = 1.4;
+  ctx.lineWidth = 1.6;
+  ctx.stroke();
+}
+
+// a limb is a rounded stroke along a quadratic curve, [sx, sy, cx, cy,
+// ex, ey, width] in units of R; stroke it once wide in OUTLINE and once
+// in its fill colour (extra = 0) to get an outlined capsule
+function strokeLimb(ctx, R, [sx, sy, cx, cy, ex, ey, width], color, extra) {
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(R * sx, R * sy);
+  ctx.quadraticCurveTo(R * cx, R * cy, R * ex, R * ey);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = R * width + extra;
   ctx.stroke();
 }
 
@@ -568,19 +615,6 @@ function drawSweatDrop(ctx, R, x, y) {
   ctx.fill();
   ctx.strokeStyle = "rgba(70,130,190,0.7)";
   ctx.lineWidth = 1;
-  ctx.stroke();
-}
-
-function drawArmCurve(ctx, R, sx, sy, cx, cy, ex, ey) {
-  ctx.lineCap = "round";
-  ctx.beginPath();
-  ctx.moveTo(sx, sy);
-  ctx.quadraticCurveTo(cx, cy, ex, ey);
-  ctx.strokeStyle = OUTLINE;
-  ctx.lineWidth = R * 0.3 + 3;
-  ctx.stroke();
-  ctx.strokeStyle = SKIN;
-  ctx.lineWidth = R * 0.3;
   ctx.stroke();
 }
 
