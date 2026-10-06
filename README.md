@@ -46,13 +46,14 @@ Install app on Android/Chrome. It launches without browser chrome and
 works offline once it has loaded one time (`sw.js`, network-first, so
 new deploys still arrive on the next launch).
 
-The icons in `icons/` are drawn with the game's own `drawKurt`, so they
-always match the character. After changing Kurt, re-render them:
+The icons in `icons/` are rendered from `icons/icon.svg`, a hand-drawn
+Kurt that matches his icon on haveanapp.com. To change the icon, edit that
+SVG and re-render the PNGs from it (512, 192, 180 for `apple-touch-icon`,
+a maskable 512 with the art pulled into the centre 80%, and a 32px
+favicon cropped close on Kurt).
 
-```
-npm i -g playwright
-NODE_PATH="$(npm root -g)" node tools/build-icons.mjs
-```
+`tools/build-icons.mjs` still renders the older icon drawn with the game's
+own `drawKurt`; running it will overwrite the current PNGs with that art.
 
 Then bump the `?v=` number on every icon URL in `index.html`,
 `manifest.webmanifest` and `sw.js`, and the `CACHE` name in `sw.js`.
