@@ -29,11 +29,12 @@ function posedKurt() {
   // enough for the hair wisps to stream back like he's mid-flight
   kurt.vy = -400;
   for (let i = 0; i < 150; i++) updateKurt(kurt, 1 / 60, 1, 700, 0.54);
-  kurt.fartExprIndex = 2; // laughing: he's having the time of his life
   kurt.blinking = false;
   kurt.squash = 0;
-  kurt.scaleX = 0.96;
-  kurt.scaleY = 1.05; // a hint of stretch sells the upward launch
+  // a touch of nose-up tilt so the tuck reads as a climb, not a sit
+  kurt.rotation = -16;
+  kurt.scaleX = 1;
+  kurt.scaleY = 1;
   return kurt;
 }
 
@@ -53,11 +54,13 @@ export function drawIcon(ctx, size, { zoom = 1 } = {}) {
   ctx.fillRect(0, 0, size, size);
 
   const kurt = posedKurt();
-  // Kurt's visual centre sits a little above and ahead of his physics origin
+  // the tuck is the icon: Kurt fills the frame, knees leading, with his
+  // visual centre (between the head and the tucked legs) on the icon's
+  // centre. The physics origin sits a little below and behind that.
   const R = 26;
-  const scale = size * 0.0122 * zoom;
-  const originX = size * 0.56 - (R * 0.05) * scale;
-  const originY = size * 0.47 + (R * 0.3) * scale;
+  const scale = size * 0.0127 * zoom;
+  const originX = size * 0.51 - (R * 0.12) * scale;
+  const originY = size * 0.5 + (R * 0.06) * scale;
 
   // sunburst radiating from Kurt
   ctx.save();
@@ -85,14 +88,14 @@ export function drawIcon(ctx, size, { zoom = 1 } = {}) {
   cloud(ctx, 16 * u, 18 * u, 0.55 * u);
   cloud(ctx, 88 * u, 70 * u, 0.4 * u);
 
-  // speed lines streaming off behind him
+  // a few bold speed lines streaming off behind him; kept chunky so they
+  // survive at Home Screen size instead of turning to noise
   ctx.strokeStyle = "rgba(255,255,255,0.8)";
   ctx.lineCap = "round";
   for (const [x, y, len, w] of [
-    [8, 40, 16, 1.6],
-    [4, 52, 12, 1.2],
-    [14, 30, 10, 1.1],
-    [70, 88, 14, 1.3],
+    [6, 34, 18, 2.2],
+    [3, 48, 13, 1.8],
+    [72, 90, 16, 2],
   ]) {
     ctx.lineWidth = w * u;
     ctx.beginPath();
@@ -110,13 +113,13 @@ export function drawIcon(ctx, size, { zoom = 1 } = {}) {
   // corner, drawn in world units so it lines up with Kurt at any zoom
   const butt = getButtPosition(kurt);
   const puffs = [];
-  const steps = 9;
+  const steps = 8;
   for (let i = 0; i < steps; i++) {
     const t = i / (steps - 1);
     puffs.push({
-      x: butt.x - 6 - t * 58 + (rand() - 0.5) * 6,
-      y: butt.y + 4 + t * 38 + (rand() - 0.5) * 6,
-      r: 7 + t * 15 + rand() * 3,
+      x: butt.x - 4 - t * 54 + (rand() - 0.5) * 6,
+      y: butt.y + 6 + t * 40 + (rand() - 0.5) * 6,
+      r: 8 + t * 16 + rand() * 3,
     });
   }
   // outline pass, then fill pass, so overlapping puffs merge into one cloud
@@ -129,15 +132,16 @@ export function drawIcon(ctx, size, { zoom = 1 } = {}) {
   ctx.fillStyle = "rgba(255,255,255,0.7)";
   for (const p of puffs) circle(ctx, p.x - p.r * 0.38, p.y - p.r * 0.42, p.r * 0.22);
 
-  // stink bits flung out of the blast
-  for (let i = 0; i < 9; i++) {
+  // a handful of chunky stink bits flung out of the blast (few and big,
+  // so they still read as dots at icon size rather than vanishing)
+  for (let i = 0; i < 6; i++) {
     const t = rand();
     ctx.fillStyle = BIT_GREENS[i % BIT_GREENS.length];
     circle(
       ctx,
-      butt.x - 8 - t * 44 + (rand() - 0.5) * 30,
-      butt.y + 2 + t * 30 + (rand() - 0.5) * 30,
-      0.9 + rand() * 1.1,
+      butt.x - 10 - t * 40 + (rand() - 0.5) * 26,
+      butt.y + 4 + t * 30 + (rand() - 0.5) * 26,
+      1.8 + rand() * 1.4,
     );
   }
 
