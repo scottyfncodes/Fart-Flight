@@ -258,8 +258,8 @@ export function drawKurt(ctx, kurt) {
 // Built straight from the reference photos: the body stays upright with
 // a rounded back, the knees are hugged up to chest height so they lead in
 // front of the chin, the shins hang almost straight down from the knees
-// so the feet dangle below the butt with sky showing between the calves
-// and the belly, and the near arm runs down the side of the thigh to a
+// so the feet dangle below the butt, toes forward, with sky showing between
+// the calves and the belly, and the near arm runs down the side of the thigh to a
 // low elbow with the forearm crossing the shin just under the knee,
 // hands clasped on the shin.
 //
@@ -282,7 +282,7 @@ function drawTuckBody(ctx, R, wiggle) {
   // far leg, in shade: a second shin and foot just behind the near leg,
   // so the tuck clearly has both legs hugged up
   drawLimb(ctx, R, FAR_SHIN, SKIN_SHADE);
-  drawFoot(ctx, R, 0.26, 1.04, 0.8, SKIN_SHADE);
+  drawFoot(ctx, R, 0.54, 1.06, 0.5, SKIN_SHADE);
 
   torsoPath(ctx, R);
   ctx.fillStyle = SKIN;
@@ -295,7 +295,7 @@ function drawTuckBody(ctx, R, wiggle) {
   // near leg: thigh hugged up to the chest, shin hanging from the knee
   drawLimb(ctx, R, NEAR_THIGH, SKIN);
   drawLimb(ctx, R, NEAR_SHIN, SKIN);
-  drawFoot(ctx, R, 0.38, 1.0, 0.8, SKIN);
+  drawFoot(ctx, R, 0.66, 1.0, 0.5, SKIN);
 
   // near arm: down the side of the thigh to a low elbow, then the forearm
   // reaches up and forward to grip the shin just below the knee
@@ -346,8 +346,8 @@ function drawClaspedHands(ctx, R, cx, cy) {
   ctx.stroke();
 }
 
-// a foot tucked under the folded leg: heel at the ankle, toes pointing
-// toward the tail so the tuck has a clear trailing edge
+// a foot hanging from the ankle: heel at the back under the shin, toes
+// pointing forward and down the way they do in a real cannonball
 function drawFoot(ctx, R, cx, cy, rot, fill) {
   ctx.fillStyle = fill;
   ctx.beginPath();
