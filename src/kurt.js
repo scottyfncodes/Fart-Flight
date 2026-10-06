@@ -254,28 +254,26 @@ export function drawKurt(ctx, kurt) {
   ctx.restore();
 }
 
-// The flying tuck. Kurt faces +x. Thighs fold up toward the chin, shins
-// fold back under the thighs, feet tuck underneath, and the near arm wraps
-// over the thigh to grip the shin under the knee.
+// The flying tuck (a cannonball off the diving board). Kurt faces +x.
+// Thighs fold up hard against the chest so the knees sit just in front
+// of and below the chin, the shins fold back tight under the thighs with
+// the heels pulled in under the butt, the feet trail back and down, and
+// the near arm wraps around the outside of the leg to grip the shin just
+// below the knee.
 //
-// Readability over anatomy: the silhouette is built from a few big,
-// deliberately separated masses with sky showing between them —
-//   * a round back/butt hump behind,
-//   * a chunky thigh thrown up and forward with the knee as the leading
-//     point under the chin,
-//   * a shin folded back under it at a visible angle, leaving a wedge of
-//     background between hamstring and calf,
-//   * feet hanging below, clear of the butt,
-//   * an arm crossing the thigh to clasped hands on the shin.
-// The torso, near thigh and near shin share one outline pass and one fill
-// pass so they read as a single clean body, with the shin in shade and a
-// few crease lines doing the internal separation. The far leg, the feet,
-// the arm and the hands are separate outlined pieces.
+// Readability over anatomy: the outer silhouette carries the pose — a
+// round back, a knee bump leading in front, the straight underside of the
+// folded leg running from knee back to the feet, the feet as a bump
+// below, and the arm's elbow and hands bumping out in front. The torso,
+// near thigh and near shin share one outline pass and one fill pass so
+// they read as a single clean body; the shin in shade and a few crease
+// lines separate the limbs inside it. The far leg, the feet, the arm and
+// the hands are separate outlined pieces.
 // Limbs are [startX, startY, controlX, controlY, endX, endY, width] in R.
-const NEAR_THIGH = [-0.34, 0.36, 0.2, 0.1, 0.84, -0.04, 0.44];
-const NEAR_SHIN = [0.82, 0.0, 0.66, 0.4, 0.38, 0.76, 0.3];
-const FAR_SHIN = [0.7, 0.12, 0.56, 0.52, 0.3, 0.86, 0.28];
-const NEAR_ARM = [0.0, -0.28, 0.14, 0.4, 0.56, 0.56, 0.26];
+const NEAR_THIGH = [-0.3, 0.46, 0.14, 0.12, 0.7, -0.14, 0.44];
+const NEAR_SHIN = [0.68, -0.12, 0.52, 0.4, 0.1, 0.78, 0.3];
+const FAR_SHIN = [0.52, 0.0, 0.38, 0.5, -0.02, 0.88, 0.28];
+const NEAR_ARM = [0.04, -0.3, 0.0, 0.8, 0.46, 0.4, 0.26];
 const LIMB_EDGE = 3.2;
 
 function drawTuckBody(ctx, R, wiggle) {
@@ -283,7 +281,7 @@ function drawTuckBody(ctx, R, wiggle) {
   // below and behind the near leg, so the tuck clearly has both legs up
   strokeLimb(ctx, R, FAR_SHIN, OUTLINE, LIMB_EDGE);
   strokeLimb(ctx, R, FAR_SHIN, SKIN_SHADE, 0);
-  drawFoot(ctx, R, 0.04, 0.96, 0.12, SKIN_SHADE);
+  drawFoot(ctx, R, -0.26, 0.98, 0.4, SKIN_SHADE);
 
   // torso + near thigh + near shin as one silhouette
   ctx.lineJoin = "round";
@@ -300,31 +298,27 @@ function drawTuckBody(ctx, R, wiggle) {
   strokeLimb(ctx, R, NEAR_THIGH, SKIN, 0);
 
   // creases carving the limbs out of the silhouette: the top of the thigh
-  // against the chest, the glute fold at the hip, the back of the knee
+  // against the chest and the glute fold at the hip
   ctx.strokeStyle = "rgba(150,90,55,0.55)";
   ctx.lineWidth = 2;
   ctx.lineCap = "round";
   ctx.beginPath();
-  ctx.moveTo(-R * 0.12, R * 0.14);
-  ctx.quadraticCurveTo(R * 0.3, -R * 0.1, R * 0.66, -R * 0.22);
+  ctx.moveTo(-R * 0.1, R * 0.22);
+  ctx.quadraticCurveTo(R * 0.2, -R * 0.1, R * 0.5, -R * 0.32);
   ctx.stroke();
   ctx.beginPath();
-  ctx.moveTo(-R * 0.3, R * 0.16);
-  ctx.quadraticCurveTo(-R * 0.5, R * 0.36, -R * 0.34, R * 0.58);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(R * 0.62, R * 0.22);
-  ctx.quadraticCurveTo(R * 0.76, R * 0.26, R * 0.9, R * 0.14);
+  ctx.moveTo(-R * 0.26, R * 0.3);
+  ctx.quadraticCurveTo(-R * 0.48, R * 0.48, -R * 0.34, R * 0.68);
   ctx.stroke();
 
-  drawFoot(ctx, R, 0.14, 0.82, 0.1, SKIN);
+  drawFoot(ctx, R, -0.1, 0.9, 0.4, SKIN);
   drawButtCrack(ctx, R, wiggle);
 
-  // near arm: drops from the shoulder over the thigh, then the forearm
-  // reaches forward to grip the shin below the knee
+  // near arm: runs down the outside of the thigh to a low elbow, then the
+  // forearm reaches up and forward to grip the shin just below the knee
   strokeLimb(ctx, R, NEAR_ARM, OUTLINE, LIMB_EDGE);
   strokeLimb(ctx, R, NEAR_ARM, SKIN, 0);
-  drawClaspedHands(ctx, R, R * 0.62, R * 0.58);
+  drawClaspedHands(ctx, R, R * 0.52, R * 0.44);
 }
 
 function torsoPath(ctx, R) {
@@ -333,9 +327,9 @@ function torsoPath(ctx, R) {
   ctx.beginPath();
   ctx.moveTo(R * 0.2, -R * 0.42);
   ctx.quadraticCurveTo(R * 0.02, -R * 0.5, -R * 0.14, -R * 0.44);
-  ctx.quadraticCurveTo(-R * 0.84, -R * 0.3, -R * 0.66, R * 0.2);
-  ctx.quadraticCurveTo(-R * 0.68, R * 0.62, -R * 0.34, R * 0.6);
-  ctx.quadraticCurveTo(-R * 0.1, R * 0.58, R * 0.1, R * 0.42);
+  ctx.quadraticCurveTo(-R * 0.86, -R * 0.28, -R * 0.66, R * 0.26);
+  ctx.quadraticCurveTo(-R * 0.7, R * 0.7, -R * 0.3, R * 0.7);
+  ctx.quadraticCurveTo(-R * 0.05, R * 0.68, R * 0.1, R * 0.5);
   ctx.quadraticCurveTo(R * 0.42, R * 0.1, R * 0.4, -R * 0.24);
   ctx.quadraticCurveTo(R * 0.36, -R * 0.42, R * 0.2, -R * 0.42);
   ctx.closePath();
