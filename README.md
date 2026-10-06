@@ -54,6 +54,11 @@ npm i -g playwright
 NODE_PATH="$(npm root -g)" node tools/build-icons.mjs
 ```
 
+Then bump the `?v=` number on every icon URL in `index.html`,
+`manifest.webmanifest` and `sw.js`, and the `CACHE` name in `sw.js`.
+iOS caches the Home Screen icon by URL, so without a new URL a phone can
+keep showing the old icon even after it is removed and re-added.
+
 If you add a new file under `src/`, also add it to `SHELL` in `sw.js` so
 it's available offline.
 
