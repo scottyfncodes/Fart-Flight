@@ -327,7 +327,7 @@ export function createGame(canvas, stageEl) {
 
   // a new fart gets Kurt's next reaction, voiced to match his face
   function startThrust() {
-    const reaction = beginThrust(kurt);
+    const reaction = beginThrust(kurt, getActiveModifiers(powerupField).thrustMult);
     if (reaction) audio.playReaction(reaction);
   }
 
@@ -687,7 +687,7 @@ export function createGame(canvas, stageEl) {
 
   function handleKeys(e) {
     if (e.repeat) return;
-    const go = e.code === "Space" || e.code === "Enter" || e.code === "ArrowUp";
+    const go = e.code === "Space" || e.code === "Enter" || e.code === "ArrowUp" || e.code === "KeyW";
     if (state === "start" && go && document.activeElement?.tagName !== "BUTTON") {
       e.preventDefault();
       beginPlay();
@@ -723,7 +723,10 @@ export function createGame(canvas, stageEl) {
         const next = obstacles.list.find((o) => o.x + o.width > kurt.x - hit.r);
         const target = next && next.x - kurt.x < 260 ? next.gapCenterY : (worldH - GROUND_H) * 0.5;
         const desiredVy = clamp((target - kurt.y) * 4, -500, 500);
-        return kurt.vy > desiredVy ? "down" : "up";
+        // a deadband keeps it from re-pressing every frame, which would
+        // fire a press kick 60 times a second; a person taps far slower
+        if (kurt.thrusting) return kurt.vy > desiredVy - 90 ? "down" : "up";
+        return kurt.vy > desiredVy + 90 ? "down" : "up";
       },
     };
   }

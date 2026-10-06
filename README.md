@@ -22,7 +22,7 @@ python3 -m http.server 8080
 
 Then open `http://localhost:8080`.
 
-Controls: hold Space / Up / tap to fart, Esc or P to pause, Space or
+Controls: hold Space / Up / W / tap to fart, Esc or P to pause, Space or
 Enter to start and restart.
 
 Add `?debug` to the URL to expose `window.__kurt` for automated
