@@ -1,41 +1,48 @@
 export function createInputHandler(el, onDown, onUp) {
   let enabled = true;
-  let held = false;
+  // every finger, mouse button and key currently holding the fart; it only
+  // stops once all of them let go, so rolling from one thumb to the other
+  // (or Space to Up) never drops Kurt
+  const sources = new Set();
+  const FART_KEYS = new Set(["Space", "ArrowUp", "KeyW"]);
 
-  function press() {
-    if (held) return;
-    held = true;
-    onDown();
+  function press(id) {
+    const wasHeld = sources.size > 0;
+    sources.add(id);
+    if (!wasHeld) onDown();
+  }
+
+  function lift(id) {
+    if (!sources.delete(id)) return;
+    if (sources.size === 0) onUp();
   }
 
   function release() {
-    if (!held) return;
-    held = false;
+    if (sources.size === 0) return;
+    sources.clear();
     onUp();
   }
 
   function handlePointerDown(e) {
     if (!enabled) return;
     e.preventDefault();
-    press();
+    press("p" + e.pointerId);
   }
 
   function handlePointerUp(e) {
-    release();
+    lift("p" + e.pointerId);
   }
 
   function handleKeyDown(e) {
     if (!enabled) return;
-    if ((e.code === "Space" || e.code === "ArrowUp") && !e.repeat) {
+    if (FART_KEYS.has(e.code)) {
       e.preventDefault();
-      press();
+      if (!e.repeat) press(e.code);
     }
   }
 
   function handleKeyUp(e) {
-    if (e.code === "Space" || e.code === "ArrowUp") {
-      release();
-    }
+    if (FART_KEYS.has(e.code)) lift(e.code);
   }
 
   function blockContextMenu(e) {

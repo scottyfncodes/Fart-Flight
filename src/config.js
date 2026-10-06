@@ -6,6 +6,14 @@ export const WORLD = {
 export const PHYSICS = {
   gravity: 1350,
   holdThrustAccel: 2500,
+  // a fresh press kills most of the fall and adds a small hop, so Kurt
+  // answers the instant you touch instead of sinking for half a second
+  pressFallDamp: 0.4,
+  pressKick: 140,
+  // extra push while still falling, so holding reverses a dive quickly
+  thrustBrakeMult: 1.6,
+  // letting go mid-climb trims the rise, so quick taps make small hops
+  releaseRiseDamp: 0.65,
   fartTickInterval: 0.12,
   maxFall: 920,
   maxRise: -700,

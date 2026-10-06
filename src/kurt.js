@@ -56,8 +56,10 @@ const REACTION_HOLD = 0.45;
 const REACTION_COOLDOWN = 0.55;
 
 // returns the reaction name when this press starts a new one, else null
-export function beginThrust(kurt) {
+export function beginThrust(kurt, thrustMult = 1) {
   kurt.thrusting = true;
+  if (kurt.vy > 0) kurt.vy *= PHYSICS.pressFallDamp;
+  kurt.vy = Math.max(PHYSICS.maxRise, kurt.vy - PHYSICS.pressKick * thrustMult);
   kurt.squash = 1;
   burstHair(kurt.hair, 0, -1, 160);
   if (kurt.reactionCooldown > 0 && kurt.reactionIndex >= 0) {
@@ -70,6 +72,7 @@ export function beginThrust(kurt) {
 }
 
 export function endThrust(kurt) {
+  if (kurt.thrusting && kurt.vy < 0) kurt.vy *= PHYSICS.releaseRiseDamp;
   kurt.thrusting = false;
   kurt.reactionHold = REACTION_HOLD;
 }
@@ -84,7 +87,8 @@ export function pulseFart(kurt, intensity) {
 
 export function updateKurt(kurt, dt, gravityMult, scrollSpeed, thrustMult = 1) {
   const g = PHYSICS.gravity * gravityMult;
-  const accel = kurt.thrusting ? g - PHYSICS.holdThrustAccel * thrustMult : g;
+  const brake = kurt.vy > 0 ? PHYSICS.thrustBrakeMult : 1;
+  const accel = kurt.thrusting ? g - PHYSICS.holdThrustAccel * thrustMult * brake : g;
   kurt.vy += accel * dt;
   kurt.vy = clamp(kurt.vy, PHYSICS.maxRise, PHYSICS.maxFall);
   kurt.y += kurt.vy * dt;
