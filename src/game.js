@@ -486,7 +486,7 @@ export function createGame(canvas, stageEl) {
           popText(fx, kurt.x + 10, kurt.y - 40, choose(["CLOSE ONE!", "CLENCH!", "PHEW!", "SQUEAKER!"]), { color: "#ffcd3c", size: 26 });
           spawnSparkles(particles, kurt.x, kurt.y, "#ffcd3c", 10);
         } else if (scoring.streak > 0 && scoring.streak % 5 === 0) {
-          const streakBonus = scoring.streak % 10 === 0 ? DIGNITY.streakGain : 0;
+          const streakBonus = DIGNITY.streakGain;
           gainDignity(scoring, streakBonus);
           const msg = streakBonus ? `${scoring.streak} IN A ROW! +${streakBonus} DIGNITY` : `${scoring.streak} IN A ROW!`;
           popText(fx, kurt.x + 10, kurt.y - 40, msg, { color: "#38d67a", size: 22 });
