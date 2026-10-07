@@ -1,5 +1,6 @@
 import { PHYSICS } from "./config.js";
 import { clamp, expLerp, rand } from "./utils.js";
+import { CLOTHES_BY_KEY } from "./clothes.js";
 import { createHair, resetHair, updateHair, burstHair, drawHair } from "./hair.js";
 
 export function createKurt() {
@@ -21,6 +22,8 @@ export function createKurt() {
     hair: createHair(),
     cosmetic: null,
     dizzy: false,
+    // which pieces Kurt still has on (see clothes.js)
+    outfit: { socks: true, shirt: true, pants: true, undies: true },
   };
 }
 
@@ -175,7 +178,7 @@ export function drawKurt(ctx, kurt) {
   ctx.rotate((kurt.rotation * Math.PI) / 180);
   ctx.scale(kurt.scaleX, kurt.scaleY);
 
-  drawTuckBody(ctx, R, kurt.thrusting ? Math.sin(kurt.buttWigglePhase) * R * 0.04 : 0);
+  drawTuckBody(ctx, R, kurt.thrusting ? Math.sin(kurt.buttWigglePhase) * R * 0.04 : 0, kurt.outfit);
 
   drawAccessoryBehindHead(ctx, R, kurt.cosmetic);
 
@@ -288,31 +291,72 @@ const FAR_SHIN = [0.6, -0.06, 0.54, 0.44, 0.36, 0.9, 0.28];
 const NEAR_ARM = [0.02, -0.3, 0.16, 0.76, 0.66, 0.26, 0.26];
 const LIMB_EDGE = 3.2;
 
-function drawTuckBody(ctx, R, wiggle) {
+function drawTuckBody(ctx, R, wiggle, outfit = {}) {
   ctx.lineJoin = "round";
+  const SOCK = CLOTHES_BY_KEY.socks.color;
+  const SHIRT = CLOTHES_BY_KEY.shirt.color;
+  const PANTS = CLOTHES_BY_KEY.pants.color;
+  const PANTS_SHADE = CLOTHES_BY_KEY.pants.trim;
+  const legFill = outfit.pants ? PANTS : SKIN;
+  const farLegFill = outfit.pants ? PANTS_SHADE : SKIN_SHADE;
 
   // far leg, in shade: a second shin and foot pressed close behind the
   // near leg, so the tuck clearly has both legs hugged up together
-  drawLimb(ctx, R, FAR_SHIN, SKIN_SHADE);
-  drawFoot(ctx, R, 0.52, 1.04, 0.5, SKIN_SHADE);
+  drawLimb(ctx, R, FAR_SHIN, farLegFill);
+  drawFoot(ctx, R, 0.52, 1.04, 0.5, outfit.socks ? "#d9d5ca" : SKIN_SHADE);
 
   torsoPath(ctx, R);
   ctx.fillStyle = SKIN;
   ctx.fill();
+  drawTorsoClothes(ctx, R, outfit);
+  torsoPath(ctx, R);
   ctx.strokeStyle = OUTLINE;
   ctx.lineWidth = 2;
   ctx.stroke();
-  drawButtCrack(ctx, R, wiggle);
+  // fully dressed or not, the crack only shows once the undies are gone
+  if (!outfit.pants && !outfit.undies) drawButtCrack(ctx, R, wiggle);
 
   // near leg: thigh hugged up to the chest, shin hanging from the knee
-  drawLimb(ctx, R, NEAR_THIGH, SKIN);
-  drawLimb(ctx, R, NEAR_SHIN, SKIN);
-  drawFoot(ctx, R, 0.57, 1.0, 0.5, SKIN);
+  drawLimb(ctx, R, NEAR_THIGH, legFill);
+  drawLimb(ctx, R, NEAR_SHIN, legFill);
+  drawFoot(ctx, R, 0.57, 1.0, 0.5, outfit.socks ? SOCK : SKIN);
 
   // near arm: down the side of the thigh to a low elbow, then the forearm
   // reaches up and forward to grip the shin just below the knee
-  drawLimb(ctx, R, NEAR_ARM, SKIN);
+  drawLimb(ctx, R, NEAR_ARM, outfit.shirt ? SHIRT : SKIN);
   drawClaspedHands(ctx, R, R * 0.7, R * 0.3);
+}
+
+// shirt over the chest and back, pants or undies over the butt, all
+// clipped to the body so nothing pokes past its outline
+function drawTorsoClothes(ctx, R, outfit) {
+  if (!outfit.shirt && !outfit.pants && !outfit.undies) return;
+  ctx.save();
+  torsoPath(ctx, R);
+  ctx.clip();
+  if (outfit.pants) {
+    ctx.fillStyle = CLOTHES_BY_KEY.pants.color;
+    ctx.fillRect(-R, R * 0.12, R * 2, R);
+    ctx.fillStyle = CLOTHES_BY_KEY.pants.trim;
+    ctx.fillRect(-R, R * 0.12, R * 2, R * 0.08);
+  } else if (outfit.undies) {
+    const u = CLOTHES_BY_KEY.undies;
+    ctx.fillStyle = u.color;
+    ctx.fillRect(-R, R * 0.36, R * 2, R);
+    ctx.fillStyle = u.trim;
+    ctx.fillRect(-R, R * 0.36, R * 2, R * 0.08);
+    ctx.beginPath();
+    ctx.arc(-R * 0.4, R * 0.62, R * 0.05, 0, Math.PI * 2);
+    ctx.arc(-R * 0.1, R * 0.72, R * 0.05, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  if (outfit.shirt) {
+    ctx.fillStyle = CLOTHES_BY_KEY.shirt.color;
+    ctx.fillRect(-R, -R, R * 2, R * 1.18);
+    ctx.fillStyle = CLOTHES_BY_KEY.shirt.trim;
+    ctx.fillRect(-R, R * 0.12, R * 2, R * 0.06);
+  }
+  ctx.restore();
 }
 
 function torsoPath(ctx, R) {

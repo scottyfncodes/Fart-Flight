@@ -5,6 +5,12 @@ He has gas. He has a dream.
 A one-button, Flappy-Bird-style arcade game. Press and hold to fart. Fly far.
 Try to keep your dignity above 0%. It seeps away faster the farther you fly.
 
+Kurt's dignity is his wardrobe: he starts every run dressed and loses his
+socks (below 85%), shirt (65%), pants (45%) and finally his undies (20%).
+Lost pieces float back by as pickups that put them back on and restore
+dignity, and every clean gap (no near-miss) earns a little back, with a
+bonus every 10 in a row.
+
 Every snack helps: Bean Burrito (steady, floatier gas), Protein Shake (a
 shield that eats one crash), Taco Tuesday (slow-mo), Hot Sauce (skinny
 Kurt squeezes through tighter gaps), Gas-X (feather float) each also give
@@ -33,7 +39,8 @@ Enter to start and restart.
 Add `?debug` to the URL to expose `window.__kurt` for automated
 playtesting: `autopilot()` returns whether to hold or release,
 `jump(meters)` teleports the run forward, `god()` disables crashes, and
-`give(key)` hands Kurt a power-up (e.g. `give("shake")`).
+`give(key)` hands Kurt a power-up (e.g. `give("shake")`), and
+`setDignity(n)` sets his dignity (and so his outfit).
 
 ## Deploy
 
@@ -78,6 +85,7 @@ it's available offline.
 - `src/hair.js` — procedural hair-strand physics
 - `src/obstacles.js` — themed obstacle spawning, movement, rendering, hazards (birds/helicopters)
 - `src/powerups.js` — rare power-up spawning, effects, rendering
+- `src/clothes.js` — Kurt's dignity wardrobe: outfit tiers, clothing pickups, clothes flying off
 - `src/particles.js` — fart cloud / sparkle particle system
 - `src/fx.js` — floating callouts, screen flashes, confetti, speed lines, dizzy stars
 - `src/background.js` — per-theme sky, sun, stars, parallax mountains/hills/skyline, and ground
