@@ -309,6 +309,54 @@ export function playReaction(reaction) {
   }
 }
 
+// Every so often a fart comes out talking: a long hissing "ffff" that
+// trails off and lands on a voiced "KURT!", like it's calling his name.
+export function playFfffKurt() {
+  const c = ensureContext();
+  if (!c) return;
+  lastReactionAt = c.currentTime;
+  const t0 = c.currentTime + 0.03;
+  const k = rand(0.92, 1.08);
+  const hiss = 0.55;
+
+  // "ffff": airy high noise that sags in pitch and fades as it runs out
+  const n = noiseSource(c);
+  const bp = c.createBiquadFilter();
+  bp.type = "bandpass";
+  bp.Q.value = 0.9;
+  bp.frequency.setValueAtTime(4200 * k, t0);
+  bp.frequency.exponentialRampToValueAtTime(2200 * k, t0 + hiss);
+  const ng = c.createGain();
+  ng.gain.setValueAtTime(0.0001, t0);
+  ng.gain.exponentialRampToValueAtTime(0.32, t0 + 0.04);
+  ng.gain.exponentialRampToValueAtTime(0.06, t0 + hiss);
+  ng.gain.exponentialRampToValueAtTime(0.0001, t0 + hiss + 0.04);
+  n.connect(bp);
+  bp.connect(ng);
+  ng.connect(masterGain);
+  n.start(t0);
+  n.stop(t0 + hiss + 0.06);
+
+  // a low fart rumble under the hiss so it still reads as a fart
+  playFart(0.6, "relief");
+
+  // "K": a short sharp click of noise
+  const kt = t0 + hiss + 0.02;
+  const kn = noiseSource(c);
+  const khp = c.createBiquadFilter();
+  khp.type = "highpass";
+  khp.frequency.value = 1800;
+  const kg = envGain(c, 0.003, 0.035, 0.3, kt);
+  kn.connect(khp);
+  khp.connect(kg);
+  kg.connect(masterGain);
+  kn.start(kt);
+  kn.stop(kt + 0.05);
+
+  // "URT": a punchy voiced syllable that drops off
+  voice(c, kt + 0.03, { vowel: "uh", f0: 210 * k, f1: 150 * k, dur: 0.26, gain: 0.2, breath: 0.15, attack: 0.012 });
+}
+
 export function startWind() {
   const c = ensureContext();
   if (!c || windSource) return;
