@@ -290,8 +290,8 @@ html, body {
 
 .title {
   font-family: var(--font-display);
-  font-size: 68px;
-  line-height: 1;
+  font-size: 64px;
+  line-height: 0.95;
   margin: 0;
   color: #fff;
   letter-spacing: 1px;
@@ -299,19 +299,10 @@ html, body {
   -webkit-text-stroke: 3px var(--ink);
   text-shadow: 0 6px 0 var(--accent), 0 10px 0 var(--ink);
 }
-.title span { display: inline-block; animation: bob 1.6s ease-in-out infinite; }
-/* the "Ffff" is the wind-up: green and trailing off before KURT lands */
-.title .fff { color: #9be07a; }
-.title .fff:nth-child(2) { font-size: 0.8em; }
-.title .fff:nth-child(3) { font-size: 0.66em; }
-.title .fff:nth-child(4) { font-size: 0.54em; margin-right: 4px; }
-.title span:nth-child(2) { animation-delay: 0.08s; }
-.title span:nth-child(3) { animation-delay: 0.16s; }
-.title span:nth-child(4) { animation-delay: 0.24s; }
-.title span:nth-child(5) { animation-delay: 0.32s; }
-.title span:nth-child(6) { animation-delay: 0.4s; }
-.title span:nth-child(7) { animation-delay: 0.48s; }
-.title span:nth-child(8) { animation-delay: 0.56s; }
+.title .word { display: block; }
+.title .word span { display: inline-block; animation: bob 1.6s ease-in-out infinite; }
+/* "Fart" is the gassy green wind-up, "Flight" is the big white payoff */
+.title .word:first-child { color: #9be07a; font-size: 0.78em; }
 @keyframes bob {
   0%, 100% { transform: translateY(0) rotate(-2deg); }
   50% { transform: translateY(-8px) rotate(2deg); }

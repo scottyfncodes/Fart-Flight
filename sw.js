@@ -1,6 +1,6 @@
 // Offline support for the Home Screen app. Network-first, so a deploy is
 // picked up on the next launch; the cache only answers when offline.
-const CACHE = "kurt-v7";
+const CACHE = "kurt-v8";
 const SHELL = [
   "./",
   "index.html",

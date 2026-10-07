@@ -1,4 +1,4 @@
-# FfffKurt
+# Fart Flight
 
 He has gas. He has a dream.
 
@@ -41,7 +41,7 @@ branch → Branch: `main`, folder: `/(root)` → Save. It'll be live at
 
 ## Home Screen app
 
-FfffKurt installs as a full-screen app: Share → Add to Home Screen on iOS,
+Fart Flight installs as a full-screen app: Share → Add to Home Screen on iOS,
 Install app on Android/Chrome. It launches without browser chrome and
 works offline once it has loaded one time (`sw.js`, network-first, so
 new deploys still arrive on the next launch).
