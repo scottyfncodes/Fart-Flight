@@ -63,52 +63,63 @@ export const THEMES = [
 export const POWERUPS = {
   spawnChance: 0.012,
   minGapBetween: 14,
+  // every pickup helps: each timed one makes flying easier for a while and
+  // also restores a little dignity; pancakes are a big dignity refill
   types: {
     burrito: {
       label: "BEAN BURRITO",
-      duration: 7,
-      thrustMult: 1.35,
-      gravityMult: 1,
+      blurb: "STEADY GAS",
+      duration: 8,
+      // gentler, floatier farts: easier to hold a line through a gap
+      thrustMult: 0.85,
+      gravityMult: 0.72,
+      dignityBonus: 5,
       color: "#c68a3a",
       icon: "burrito",
     },
     shake: {
       label: "PROTEIN SHAKE",
-      duration: 6,
-      thrustMult: 1.85,
-      gravityMult: 1.25,
+      blurb: "FART SHIELD",
+      duration: 10,
+      // shrugs off one crash, then it's used up
+      shield: true,
+      dignityBonus: 5,
       color: "#e7e4da",
       icon: "shake",
     },
     taco: {
       label: "TACO TUESDAY",
+      blurb: "SLOW-MO",
       duration: 6.5,
-      thrustMult: 2.1,
-      gravityMult: 1,
+      speedMult: 0.65,
+      dignityBonus: 5,
       color: "#ffcd3c",
       icon: "taco",
     },
     hotsauce: {
       label: "HOT SAUCE",
-      duration: 7,
-      thrustMult: 1,
-      gravityMult: 1,
-      speedMult: 1.4,
+      blurb: "SKINNY KURT",
+      duration: 8,
+      // Kurt sweats it out and squeezes through tighter gaps
+      hitScale: 0.6,
+      dignityBonus: 5,
       color: "#e0331f",
       icon: "hotsauce",
     },
     gasx: {
       label: "GAS-X",
+      blurb: "FEATHER FLOAT",
       duration: 8,
       thrustMult: 0.65,
       gravityMult: 0.55,
+      dignityBonus: 5,
       color: "#8fd6c8",
       icon: "gasx",
     },
     pancakes: {
       label: "STACK OF PANCAKES",
       instant: true,
-      dignityBonus: 15,
+      dignityBonus: 25,
       color: "#e8a33d",
       icon: "pancakes",
     },
@@ -119,6 +130,13 @@ export const DIGNITY = {
   nearMissLoss: 3,
   collisionLoss: 35,
   nearMissDistance: 16,
+  // dignity seeps away as Kurt flies, faster the farther he gets:
+  // points lost per meter = drainBase + meters * drainGrowth
+  // (about 7 lost by 100m, 50 by 500m, 100 by 800m without pickups)
+  drainBase: 0.06,
+  drainGrowth: 0.00016,
+  // what the protein shake's shield costs when it saves Kurt
+  shieldLoss: 10,
 };
 
 export const COSMETICS = [

@@ -1,4 +1,4 @@
-import { PHYSICS, SCROLL, DIGNITY, COSMETICS, WORLD } from "./config.js";
+import { PHYSICS, SCROLL, DIGNITY, COSMETICS, WORLD, POWERUPS } from "./config.js";
 import { clamp, rand, choose } from "./utils.js";
 import * as audio from "./audio.js";
 import { storage } from "./storage.js";
@@ -87,6 +87,8 @@ export function createGame(canvas, stageEl) {
   let fartTickTimer = 0;
   // seconds until a fart is allowed to say "FfffKurt!" again
   let ffffCooldown = 0;
+  // brief grace after the shield pops so Kurt can clear what he hit
+  let invuln = 0;
   let cosmeticId = storage.getCosmetic();
   let lastTime = 0;
   let running = false;
@@ -138,6 +140,7 @@ export function createGame(canvas, stageEl) {
     scrollSpeed = SCROLL.baseSpeed;
     shownGradeIndex = 0;
     ffffCooldown = rand(3, 6);
+    invuln = 0;
     hitStop = 0;
     slowMo = 0;
     nextMilestone = MILESTONE_EVERY;
@@ -414,7 +417,11 @@ export function createGame(canvas, stageEl) {
       fartTickTimer = 0;
     }
 
+    const prevMeters = scoring.meters;
     addDistance(scoring, scrollSpeed * dt, WORLD.pxPerMeter);
+    const dm = scoring.meters - prevMeters;
+    loseDignity(scoring, dm * (DIGNITY.drainBase + scoring.meters * DIGNITY.drainGrowth));
+    invuln = Math.max(0, invuln - dt);
     updateBackground(background, dt, scrollSpeed, scoring.meters);
     updateObstacles(obstacles, dt, scrollSpeed, worldW, worldH, GROUND_H, scoring.meters);
     maybeSpawnPowerup(powerupField, dt, worldW, worldH, GROUND_H, scoring.meters);
@@ -425,12 +432,13 @@ export function createGame(canvas, stageEl) {
     audio.setMusicIntensity(1 + speedFrac(), speedFrac());
 
     const hit = getHitCircle(kurt);
+    hit.r *= mods.hitScale;
     let cause = null;
     const playH = worldH - GROUND_H;
     if (hit.y + hit.r > playH) cause = "ground";
     else if (hit.y - hit.r < -4) cause = "ceiling";
 
-    if (!cause) {
+    if (!cause && invuln <= 0) {
       for (const o of obstacles.list) {
         if (kurtHitsRects(hit, getObstacleRects(o, worldH, GROUND_H)) ||
             (o.hasSpinner && kurtHitsSpinner(hit, getSpinnerPoints(o)))) {
@@ -439,7 +447,7 @@ export function createGame(canvas, stageEl) {
         }
       }
     }
-    if (!cause) {
+    if (!cause && invuln <= 0) {
       for (const h of obstacles.hazards) {
         if (kurtHitsCircle(hit, getHazardCollider(h))) {
           cause = h.kind;
@@ -470,7 +478,10 @@ export function createGame(canvas, stageEl) {
         kurt.x,
         kurt.y,
         hit.r,
-        (key, def) => onPickup(def),
+        (key, def) => {
+          gainDignity(scoring, def.dignityBonus || 0);
+          onPickup(def, `${def.blurb}!`);
+        },
         (key, def) => {
           gainDignity(scoring, def.dignityBonus || 0);
           onPickup(def, `+${def.dignityBonus} DIGNITY`);
@@ -509,7 +520,36 @@ export function createGame(canvas, stageEl) {
       ui.updateHud(scoring.meters, grade.code, scoring.dignity, powerupField.active);
     }
 
-    if (cause && !godMode) crash(cause);
+    if (cause && invuln > 0 && (cause === "ground" || cause === "ceiling")) bounceOffEdge(cause);
+    else if (cause && mods.shield) popShield(cause);
+    else if (cause && !godMode) crash(cause);
+  }
+
+  // the protein shake eats one crash: Kurt bounces off and gets a moment
+  // of grace instead of going down
+  function popShield(cause) {
+    powerupField.active = null;
+    invuln = 1.2;
+    loseDignity(scoring, DIGNITY.shieldLoss);
+    bounceOffEdge(cause);
+    audio.playImpact();
+    triggerShake(0.18, 6);
+    flash(fx, 0.4, "#e7e4da");
+    spawnSparkles(particles, kurt.x, kurt.y, "#e7e4da", 22);
+    popText(fx, kurt.x + 10, kurt.y - 40, "SHIELD SAVED YOU!", { color: "#e7e4da", size: 24, life: 1.2 });
+    buzz(40);
+  }
+
+  function bounceOffEdge(cause) {
+    const playH = worldH - GROUND_H;
+    const r = getHitCircle(kurt).r;
+    if (cause === "ground") {
+      kurt.y = Math.min(kurt.y, playH - r - 2);
+      kurt.vy = -420;
+    } else if (cause === "ceiling") {
+      kurt.y = Math.max(kurt.y, r);
+      kurt.vy = 220;
+    }
   }
 
   function onPickup(def, label) {
@@ -603,7 +643,11 @@ export function createGame(canvas, stageEl) {
       ctx.scale(1.8, 1.8);
       ctx.translate(-kurt.x, -kurt.y);
     }
+    // flicker through the shield's grace period
+    const blink = invuln > 0 && Math.floor(invuln * 14) % 2 === 0;
+    if (blink) ctx.globalAlpha = 0.35;
     drawKurt(ctx, kurt);
+    if (blink) ctx.globalAlpha = 1;
     drawParticles(ctx, particles);
     ctx.restore();
     drawFxWorld(ctx, fx, state === "dying" || state === "gameover" ? kurt : null);
@@ -721,6 +765,17 @@ export function createGame(canvas, stageEl) {
       state: () => state,
       god(on = true) {
         godMode = on;
+      },
+      dignity: () => scoring.dignity,
+      // hand Kurt a power-up as if he'd just grabbed it
+      give(key) {
+        const def = POWERUPS.types[key];
+        if (def.instant) {
+          gainDignity(scoring, def.dignityBonus || 0);
+          return;
+        }
+        powerupField.active = { key, def, timeLeft: def.duration, duration: def.duration };
+        gainDignity(scoring, def.dignityBonus || 0);
       },
       meters: () => scoring.meters,
       jump(m) {

@@ -3,7 +3,12 @@
 He has gas. He has a dream.
 
 A one-button, Flappy-Bird-style arcade game. Press and hold to fart. Fly far.
-Try to keep your dignity above 0%.
+Try to keep your dignity above 0%. It seeps away faster the farther you fly.
+
+Every snack helps: Bean Burrito (steady, floatier gas), Protein Shake (a
+shield that eats one crash), Taco Tuesday (slow-mo), Hot Sauce (skinny
+Kurt squeezes through tighter gaps), Gas-X (feather float) each also give
++5 dignity, and a Stack of Pancakes restores +25 dignity.
 
 Seven themed zones (forest, construction site, power lines, downtown,
 desert, castle, the void), each with its own sky and parallax scenery.
@@ -27,7 +32,8 @@ Enter to start and restart.
 
 Add `?debug` to the URL to expose `window.__kurt` for automated
 playtesting: `autopilot()` returns whether to hold or release,
-`jump(meters)` teleports the run forward, and `god()` disables crashes.
+`jump(meters)` teleports the run forward, `god()` disables crashes, and
+`give(key)` hands Kurt a power-up (e.g. `give("shake")`).
 
 ## Deploy
 

@@ -55,12 +55,14 @@ export function tryCollectPowerups(field, kurtX, kurtY, kurtR, onCollect, onInst
 }
 
 export function getActiveModifiers(field) {
-  if (!field.active) return { thrustMult: 1, gravityMult: 1, speedMult: 1 };
+  if (!field.active) return { thrustMult: 1, gravityMult: 1, speedMult: 1, hitScale: 1, shield: false };
   const d = field.active.def;
   return {
     thrustMult: d.thrustMult || 1,
     gravityMult: d.gravityMult || 1,
     speedMult: d.speedMult || 1,
+    hitScale: d.hitScale || 1,
+    shield: !!d.shield,
   };
 }
 
