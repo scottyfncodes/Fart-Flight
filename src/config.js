@@ -135,6 +135,10 @@ export const DIGNITY = {
   // (about 7 lost by 100m, 50 by 500m, 100 by 800m without pickups)
   drainBase: 0.06,
   drainGrowth: 0.00016,
+  // dignity earned back for flying clean: every gap passed without a
+  // near-miss, plus a bonus every 10 in a row
+  cleanPassGain: 0.4,
+  streakGain: 3,
   // what the protein shake's shield costs when it saves Kurt
   shieldLoss: 10,
 };

@@ -48,6 +48,18 @@ import {
   drawFxScreen,
 } from "./fx.js";
 import * as ui from "./ui.js";
+import {
+  CLOTHES,
+  outfitFor,
+  restoreAmount,
+  createWardrobe,
+  resetWardrobe,
+  maybeSpawnClothes,
+  throwOff,
+  updateWardrobe,
+  tryCollectClothes,
+  drawWardrobe,
+} from "./clothes.js";
 
 const GROUND_H = 34;
 const MILESTONE_EVERY = 100;
@@ -87,6 +99,7 @@ export function createGame(canvas, stageEl) {
   let fartTickTimer = 0;
   // seconds until a fart is allowed to say "FfffKurt!" again
   let ffffCooldown = 0;
+  const wardrobe = createWardrobe();
   // brief grace after the shield pops so Kurt can clear what he hit
   let invuln = 0;
   let cosmeticId = storage.getCosmetic();
@@ -132,6 +145,7 @@ export function createGame(canvas, stageEl) {
     resetScoring(scoring);
     resetObstacleField(obstacles);
     resetPowerupField(powerupField);
+    resetWardrobe(wardrobe);
     resetFx(fx);
     particles.puffs.length = 0;
     particles.bits.length = 0;
@@ -426,6 +440,8 @@ export function createGame(canvas, stageEl) {
     updateObstacles(obstacles, dt, scrollSpeed, worldW, worldH, GROUND_H, scoring.meters);
     maybeSpawnPowerup(powerupField, dt, worldW, worldH, GROUND_H, scoring.meters);
     updatePowerups(powerupField, dt, scrollSpeed);
+    maybeSpawnClothes(wardrobe, dt, scoring.dignity, worldW, worldH, GROUND_H);
+    updateWardrobe(wardrobe, dt, scrollSpeed);
     updateParticles(particles, dt);
     updateFx(fx, dt, scrollSpeed, worldW, worldH, speedFrac());
     audio.setWindIntensity(clamp(Math.abs(kurt.vy) / 700, 0, 1));
@@ -459,6 +475,8 @@ export function createGame(canvas, stageEl) {
     if (!cause) {
       checkNearMissAndScore(obstacles, kurt.x, kurt.y, hit.r, (nearMiss) => {
         registerPass(scoring, nearMiss);
+        // clean flying earns a little dignity back
+        if (!nearMiss) gainDignity(scoring, DIGNITY.cleanPassGain);
         if (nearMiss) {
           loseDignity(scoring, DIGNITY.nearMissLoss);
           ui.flashNearMiss();
@@ -468,9 +486,22 @@ export function createGame(canvas, stageEl) {
           popText(fx, kurt.x + 10, kurt.y - 40, choose(["CLOSE ONE!", "CLENCH!", "PHEW!", "SQUEAKER!"]), { color: "#ffcd3c", size: 26 });
           spawnSparkles(particles, kurt.x, kurt.y, "#ffcd3c", 10);
         } else if (scoring.streak > 0 && scoring.streak % 5 === 0) {
-          popText(fx, kurt.x + 10, kurt.y - 40, `${scoring.streak} IN A ROW!`, { color: "#38d67a", size: 22 });
+          const streakBonus = scoring.streak % 10 === 0 ? DIGNITY.streakGain : 0;
+          gainDignity(scoring, streakBonus);
+          const msg = streakBonus ? `${scoring.streak} IN A ROW! +${streakBonus} DIGNITY` : `${scoring.streak} IN A ROW!`;
+          popText(fx, kurt.x + 10, kurt.y - 40, msg, { color: "#38d67a", size: 22 });
           audio.playMilestone();
         }
+      });
+
+      tryCollectClothes(wardrobe, kurt.x, kurt.y, hit.r / mods.hitScale, (piece) => {
+        const amt = Math.round(restoreAmount(scoring.dignity, piece));
+        gainDignity(scoring, amt);
+        audio.playPowerUp();
+        spawnSparkles(particles, kurt.x, kurt.y, "#ffe066", 18);
+        flash(fx, 0.2, "#ffe066");
+        popText(fx, kurt.x + 20, kurt.y - 36, `${piece.label} BACK ON! +${amt}`, { color: "#ffe066", size: 22, life: 1.3 });
+        buzz(20);
       });
 
       tryCollectPowerups(
@@ -602,6 +633,24 @@ export function createGame(canvas, stageEl) {
     updateFx(fx, dt, 0, worldW, worldH, 0);
   }
 
+  // strip Kurt down (or dress him back up) to match his dignity; anything
+  // he loses mid-run goes flying
+  function syncOutfit() {
+    const next = outfitFor(scoring.dignity);
+    if (state === "playing" || state === "dying") {
+      for (const c of CLOTHES) {
+        if (kurt.outfit[c.key] && !next[c.key]) {
+          throwOff(wardrobe, c, kurt.x, kurt.y);
+          if (state === "playing") {
+            popText(fx, kurt.x, kurt.y - 50, `LOST HIS ${c.label}!`, { color: "#ff6fa5", size: 24, life: 1.3 });
+            audio.playWhoosh();
+          }
+        }
+      }
+    }
+    kurt.outfit = next;
+  }
+
   function update(dt) {
     if (shake.t > 0) shake.t = Math.max(0, shake.t - dt);
     if (hitStop > 0) {
@@ -613,10 +662,14 @@ export function createGame(canvas, stageEl) {
       dt *= 0.45;
     }
     stateTime += dt;
+    syncOutfit();
     if (state === "start") updateIdleStart(dt);
     else if (state === "ready") updateReady(dt);
     else if (state === "playing") updatePlaying(dt);
-    else if (state === "dying") updateDying(dt);
+    else if (state === "dying") {
+      updateDying(dt);
+      updateWardrobe(wardrobe, dt, 0);
+    }
     else updateGameOver(dt);
   }
 
@@ -631,6 +684,7 @@ export function createGame(canvas, stageEl) {
 
     if (state !== "start") {
       drawPowerups(ctx, powerupField);
+      drawWardrobe(ctx, wardrobe);
       for (const o of obstacles.list) drawObstacle(ctx, o, worldH, GROUND_H);
       for (const h of obstacles.hazards) drawHazard(ctx, h);
     }
@@ -767,6 +821,9 @@ export function createGame(canvas, stageEl) {
         godMode = on;
       },
       dignity: () => scoring.dignity,
+      setDignity(v) {
+        scoring.dignity = v;
+      },
       // hand Kurt a power-up as if he'd just grabbed it
       give(key) {
         const def = POWERUPS.types[key];
