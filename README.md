@@ -3,7 +3,7 @@
 He has gas. He has a dream.
 
 A one-button, Flappy-Bird-style arcade game. Press and hold to fart. Fly far.
-Try to keep your dignity above 0%. It drains fast (about 4% a second, faster the
+Try to keep your dignity above 0%. It drains fast (about 7% a second, faster the
 farther you fly), so Kurt's clothes are always coming off and going back on.
 
 Kurt's dignity is his wardrobe: he starts every run dressed and loses his
