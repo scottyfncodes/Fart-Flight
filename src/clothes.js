@@ -14,10 +14,11 @@ export const CLOTHES = [
 
 export const CLOTHES_BY_KEY = Object.fromEntries(CLOTHES.map((c) => [c.key, c]));
 
-// pickups land you this far above the piece's line, so one bad near-miss
-// doesn't strip it straight back off
-const RESTORE_MARGIN = 8;
-const MIN_RESTORE = 12;
+// pickups land you this far above the piece's line: against the drain
+// that's a second or two of wearing it before it comes off again. The
+// drain always wins in the end; pickups only buy time.
+const RESTORE_MARGIN = 25;
+const MIN_RESTORE = 20;
 
 export function outfitFor(dignity) {
   const o = {};

@@ -15,7 +15,8 @@ bonus every 5 in a row.
 Every snack helps: Bean Burrito (steady, floatier gas), Protein Shake (a
 shield that eats one crash), Taco Tuesday (slow-mo), Hot Sauce (skinny
 Kurt squeezes through tighter gaps), Gas-X (feather float) each also give
-+10 dignity, and a Stack of Pancakes restores +30 dignity.
++20 dignity, and a Stack of Pancakes restores +45 dignity. The drain always
+wins in the end: pickups only buy Kurt a few more seconds in his clothes.
 
 Seven themed zones (forest, construction site, power lines, downtown,
 desert, castle, the void), each with its own sky and parallax scenery.
