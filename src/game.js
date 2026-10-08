@@ -489,7 +489,6 @@ export function createGame(canvas, stageEl) {
         audio.playPowerUp();
         spawnSparkles(particles, kurt.x, kurt.y, "#ffe066", 18);
         flash(fx, 0.2, "#ffe066");
-        popText(fx, kurt.x + 20, kurt.y - 36, `${piece.label} BACK ON! +${amt}`, { color: "#ffe066", size: 22, life: 1.3 });
         buzz(20);
       });
 
@@ -631,7 +630,6 @@ export function createGame(canvas, stageEl) {
         if (kurt.outfit[c.key] && !next[c.key]) {
           throwOff(wardrobe, c, kurt.x, kurt.y);
           if (state === "playing") {
-            popText(fx, kurt.x, kurt.y - 50, `LOST HIS ${c.label}!`, { color: "#ff6fa5", size: 24, life: 1.3 });
             audio.playWhoosh();
           }
         }
