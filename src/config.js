@@ -62,7 +62,7 @@ export const THEMES = [
 
 export const POWERUPS = {
   spawnChance: 0.012,
-  minGapBetween: 14,
+  minGapBetween: 8,
   // every pickup helps: each timed one makes flying easier for a while and
   // also restores a little dignity; pancakes are a big dignity refill
   types: {
@@ -73,7 +73,7 @@ export const POWERUPS = {
       // gentler, floatier farts: easier to hold a line through a gap
       thrustMult: 0.85,
       gravityMult: 0.72,
-      dignityBonus: 5,
+      dignityBonus: 10,
       color: "#c68a3a",
       icon: "burrito",
     },
@@ -83,7 +83,7 @@ export const POWERUPS = {
       duration: 10,
       // shrugs off one crash, then it's used up
       shield: true,
-      dignityBonus: 5,
+      dignityBonus: 10,
       color: "#e7e4da",
       icon: "shake",
     },
@@ -92,7 +92,7 @@ export const POWERUPS = {
       blurb: "SLOW-MO",
       duration: 6.5,
       speedMult: 0.65,
-      dignityBonus: 5,
+      dignityBonus: 10,
       color: "#ffcd3c",
       icon: "taco",
     },
@@ -102,7 +102,7 @@ export const POWERUPS = {
       duration: 8,
       // Kurt sweats it out and squeezes through tighter gaps
       hitScale: 0.6,
-      dignityBonus: 5,
+      dignityBonus: 10,
       color: "#e0331f",
       icon: "hotsauce",
     },
@@ -112,14 +112,14 @@ export const POWERUPS = {
       duration: 8,
       thrustMult: 0.65,
       gravityMult: 0.55,
-      dignityBonus: 5,
+      dignityBonus: 10,
       color: "#8fd6c8",
       icon: "gasx",
     },
     pancakes: {
       label: "STACK OF PANCAKES",
       instant: true,
-      dignityBonus: 25,
+      dignityBonus: 30,
       color: "#e8a33d",
       icon: "pancakes",
     },
@@ -132,13 +132,16 @@ export const DIGNITY = {
   nearMissDistance: 16,
   // dignity seeps away as Kurt flies, faster the farther he gets:
   // points lost per meter = drainBase + meters * drainGrowth
-  // (about 7 lost by 100m, 50 by 500m, 100 by 800m without pickups)
-  drainBase: 0.06,
-  drainGrowth: 0.00016,
+  // Kurt flies ~4 m/s, so that's about 4 dignity a second at the start and
+  // ~8 by 1000m: on his own he'd be naked in under half a minute. Clean
+  // passes, snacks and clothing pickups pull it back, so his clothes are
+  // always coming off and going back on.
+  drainBase: 1.0,
+  drainGrowth: 0.0006,
   // dignity earned back for flying clean: every gap passed without a
-  // near-miss, plus a bonus every 10 in a row
-  cleanPassGain: 0.4,
-  streakGain: 3,
+  // near-miss, plus a bonus every 5 in a row
+  cleanPassGain: 2,
+  streakGain: 5,
   // what the protein shake's shield costs when it saves Kurt
   shieldLoss: 10,
 };

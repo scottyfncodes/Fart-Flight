@@ -3,18 +3,19 @@
 He has gas. He has a dream.
 
 A one-button, Flappy-Bird-style arcade game. Press and hold to fart. Fly far.
-Try to keep your dignity above 0%. It seeps away faster the farther you fly.
+Try to keep your dignity above 0%. It drains fast (about 4% a second, faster the
+farther you fly), so Kurt's clothes are always coming off and going back on.
 
 Kurt's dignity is his wardrobe: he starts every run dressed and loses his
 socks (below 85%), shirt (65%), pants (45%) and finally his undies (20%).
 Lost pieces float back by as pickups that put them back on and restore
 dignity, and every clean gap (no near-miss) earns a little back, with a
-bonus every 10 in a row.
+bonus every 5 in a row.
 
 Every snack helps: Bean Burrito (steady, floatier gas), Protein Shake (a
 shield that eats one crash), Taco Tuesday (slow-mo), Hot Sauce (skinny
 Kurt squeezes through tighter gaps), Gas-X (feather float) each also give
-+5 dignity, and a Stack of Pancakes restores +25 dignity.
++10 dignity, and a Stack of Pancakes restores +30 dignity.
 
 Seven themed zones (forest, construction site, power lines, downtown,
 desert, castle, the void), each with its own sky and parallax scenery.

@@ -17,7 +17,7 @@ export const CLOTHES_BY_KEY = Object.fromEntries(CLOTHES.map((c) => [c.key, c]))
 // pickups land you this far above the piece's line, so one bad near-miss
 // doesn't strip it straight back off
 const RESTORE_MARGIN = 8;
-const MIN_RESTORE = 10;
+const MIN_RESTORE = 12;
 
 export function outfitFor(dignity) {
   const o = {};
@@ -38,14 +38,14 @@ export function restoreAmount(dignity, piece) {
 }
 
 export function createWardrobe() {
-  return { items: [], flying: [], sinceSpawn: 0, nextSpawn: 6 };
+  return { items: [], flying: [], sinceSpawn: 0, nextSpawn: 2 };
 }
 
 export function resetWardrobe(w) {
   w.items.length = 0;
   w.flying.length = 0;
   w.sinceSpawn = 0;
-  w.nextSpawn = rand(5, 8);
+  w.nextSpawn = rand(1.5, 2.5);
 }
 
 // while something is missing, float its replacement in every so often
@@ -55,7 +55,7 @@ export function maybeSpawnClothes(w, dt, dignity, worldW, worldH, groundH) {
   w.sinceSpawn += dt;
   if (w.sinceSpawn < w.nextSpawn) return;
   w.sinceSpawn = 0;
-  w.nextSpawn = rand(7, 11);
+  w.nextSpawn = rand(2.5, 4);
   const y = rand(worldH * 0.18, (worldH - groundH) * 0.78);
   w.items.push({ piece, x: worldW + 30, y, r: 20, phase: rand(0, 10) });
 }
