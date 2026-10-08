@@ -1,6 +1,6 @@
 // Offline support for the Home Screen app. Network-first, so a deploy is
 // picked up on the next launch; the cache only answers when offline.
-const CACHE = "kurt-v12";
+const CACHE = "kurt-v13";
 const SHELL = [
   "./",
   "index.html",
@@ -48,7 +48,8 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method !== "GET" || new URL(request.url).origin !== self.location.origin) return;
   event.respondWith(
-    fetch(request)
+    // skip the browser's HTTP cache so a fresh deploy shows up right away
+    fetch(request, { cache: "no-cache" })
       .then((res) => {
         if (res.ok) {
           const copy = res.clone();
