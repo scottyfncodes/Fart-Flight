@@ -24,6 +24,7 @@
     <use href="#ray" transform="rotate(128.5)"/><use href="#ray" transform="rotate(154.2)"/>
   </g>
   <rect width="512" height="512" fill="url(#glow)"/>
+  <g id="fg">
   <!-- clouds -->
   <g fill="#fff" opacity="0.92">
     <ellipse cx="78" cy="96" rx="58" ry="32"/><ellipse cx="122" cy="80" rx="42" ry="30"/><ellipse cx="40" cy="88" rx="36" ry="24"/>
@@ -55,32 +56,36 @@
     <circle cx="130" cy="384" r="6"/><circle cx="30" cy="404" r="5"/><circle cx="196" cy="498" r="6"/>
   </g>
 
-  <!-- Kurt in his cannonball tuck, climbing nose-up (geometry from src/kurt.js, R = 100) -->
+  <!-- Kurt in his cannonball tuck, climbing nose-up (geometry from src/kurt.js, R = 100),
+       fully dressed the way he starts every run (colours from src/clothes.js) -->
   <g transform="translate(292 262) scale(1.42) rotate(-18)" filter="url(#drop)" stroke-linejoin="round" stroke-linecap="round">
     <!-- hair wisps streaming back -->
     <g fill="none" stroke="#4a2f1c" stroke-width="9">
       <path d="M-44 -104 Q-62 -114 -78 -110"/><path d="M-30 -118 Q-46 -134 -64 -134"/>
     </g>
-    <!-- far shin and foot, in shade -->
+    <!-- far shin and foot, in shade: jeans and a sock -->
     <path d="M60 -6 Q54 44 36 90" fill="none" stroke="#6b3a1f" stroke-width="40"/>
-    <path d="M60 -6 Q54 44 36 90" fill="none" stroke="#e0a97c" stroke-width="28"/>
-    <ellipse cx="52" cy="104" rx="25" ry="12" transform="rotate(28.6 52 104)" fill="#e0a97c" stroke="#6b3a1f" stroke-width="6"/>
-    <!-- torso and butt -->
-    <use href="#torso" fill="#f4c9a0" stroke="#6b3a1f" stroke-width="7"/>
-    <g clip-path="url(#torsoClip)" fill="none">
-      <path d="M-48 34 Q-54 56 -45 78" stroke="rgba(140,80,50,0.28)" stroke-width="13"/>
-      <path d="M-48 36 Q-54 56 -45 77" stroke="#8a4e2c" stroke-width="6"/>
-      <path d="M-71.8 77.2 A30 30 0 0 1 -90.4 39.6" stroke="rgba(150,90,55,0.3)" stroke-width="8"/>
+    <path d="M60 -6 Q54 44 36 90" fill="none" stroke="#2b4173" stroke-width="28"/>
+    <ellipse cx="52" cy="104" rx="25" ry="12" transform="rotate(28.6 52 104)" fill="#d9d5ca" stroke="#6b3a1f" stroke-width="6"/>
+    <!-- torso: blue tee over the chest and back, jeans over the butt -->
+    <use href="#torso" fill="#f4c9a0"/>
+    <g clip-path="url(#torsoClip)">
+      <rect x="-100" y="12" width="200" height="100" fill="#3d5a99"/>
+      <rect x="-100" y="12" width="200" height="8" fill="#2b4173"/>
+      <rect x="-100" y="-100" width="200" height="118" fill="#3fb8f5"/>
+      <rect x="-100" y="12" width="200" height="6" fill="#2a8cc0"/>
+      <path d="M-46 40 Q-52 60 -44 80" fill="none" stroke="#2b4173" stroke-width="4" opacity="0.7"/>
     </g>
+    <use href="#torso" fill="none" stroke="#6b3a1f" stroke-width="7"/>
     <!-- near thigh hugged to the chest, shin hanging from the knee -->
     <path d="M-24 56 Q18 14 70 -14" fill="none" stroke="#6b3a1f" stroke-width="54"/>
-    <path d="M-24 56 Q18 14 70 -14" fill="none" stroke="#f4c9a0" stroke-width="42"/>
+    <path d="M-24 56 Q18 14 70 -14" fill="none" stroke="#3d5a99" stroke-width="42"/>
     <path d="M66 -8 Q58 42 40 88" fill="none" stroke="#6b3a1f" stroke-width="42"/>
-    <path d="M66 -8 Q58 42 40 88" fill="none" stroke="#f4c9a0" stroke-width="30"/>
-    <ellipse cx="57" cy="100" rx="25" ry="12" transform="rotate(28.6 57 100)" fill="#f4c9a0" stroke="#6b3a1f" stroke-width="6"/>
+    <path d="M66 -8 Q58 42 40 88" fill="none" stroke="#3d5a99" stroke-width="30"/>
+    <ellipse cx="57" cy="100" rx="25" ry="12" transform="rotate(28.6 57 100)" fill="#f4f1e8" stroke="#6b3a1f" stroke-width="6"/>
     <!-- near arm down the thigh, hands clasped on the shin -->
     <path d="M2 -30 Q16 76 66 26" fill="none" stroke="#6b3a1f" stroke-width="38"/>
-    <path d="M2 -30 Q16 76 66 26" fill="none" stroke="#f4c9a0" stroke-width="26"/>
+    <path d="M2 -30 Q16 76 66 26" fill="none" stroke="#3fb8f5" stroke-width="26"/>
     <circle cx="63" cy="30" r="15" fill="#e0a97c" stroke="#6b3a1f" stroke-width="5"/>
     <circle cx="79" cy="33" r="15" fill="#e0a97c" stroke="#6b3a1f" stroke-width="5"/>
     <!-- head, in profile -->
@@ -101,5 +106,6 @@
       <path d="M9 28 Q28 21 47 28 Q43 44 28 47 Q13 44 9 28 Z" fill="#7a2020" stroke="#6b3a1f" stroke-width="5"/>
       <ellipse cx="28" cy="27" rx="15" ry="4.5" fill="#fff"/>
     </g>
+  </g>
   </g>
 </svg>

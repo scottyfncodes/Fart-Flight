@@ -3,7 +3,7 @@
 He has gas. He has a dream.
 
 A one-button, Flappy-Bird-style arcade game. Press and hold to fart. Fly far.
-Try to keep your dignity above 0%. It drains fast (about 15% a second, faster the
+Try to keep your dignity above 0%. It drains fast (about 11% a second, faster the
 farther you fly), so Kurt's clothes are always coming off and going back on.
 
 Kurt's dignity is his wardrobe: he starts every run dressed and loses his
@@ -62,7 +62,7 @@ works offline once it has loaded one time (`sw.js`, network-first, so
 new deploys still arrive on the next launch).
 
 The icons in `icons/` are rendered from `icons/icon.svg`, a hand-drawn
-Kurt that matches his icon on haveanapp.com. To change the icon, edit that
+Kurt, fully dressed the way he starts every run. To change the icon, edit that
 SVG and re-render the PNGs from it (512, 192, 180 for `apple-touch-icon`,
 a maskable 512 with the art pulled into the centre 80%, and a 32px
 favicon cropped close on Kurt).
