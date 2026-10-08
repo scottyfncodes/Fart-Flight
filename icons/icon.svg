@@ -37,15 +37,16 @@
   </g>
 
   <!-- the fart cloud: out of the butt, billowing to the bottom-left corner -->
+  <g transform="translate(40 22)">
   <g id="puffs">
-    <circle cx="214" cy="372" r="28"/><circle cx="186" cy="404" r="38"/><circle cx="150" cy="438" r="48"/>
+    <circle cx="226" cy="368" r="22"/><circle cx="208" cy="384" r="28"/><circle cx="-4" cy="470" r="56"/><circle cx="186" cy="404" r="38"/><circle cx="150" cy="438" r="48"/>
     <circle cx="104" cy="468" r="56"/><circle cx="46" cy="498" r="66"/><circle cx="166" cy="484" r="38"/>
     <circle cx="80" cy="424" r="30"/>
   </g>
   <use href="#puffs" fill="#3d7a1c" stroke="#3d7a1c" stroke-width="14"/>
   <use href="#puffs" fill="#9fd45e"/>
   <g fill="#d9f2b0">
-    <circle cx="208" cy="366" r="20"/><circle cx="178" cy="396" r="28"/><circle cx="140" cy="428" r="36"/>
+    <circle cx="222" cy="364" r="15"/><circle cx="208" cy="366" r="20"/><circle cx="178" cy="396" r="28"/><circle cx="140" cy="428" r="36"/>
     <circle cx="94" cy="456" r="42"/><circle cx="36" cy="486" r="49"/><circle cx="72" cy="416" r="21"/>
   </g>
   <g fill="#fff" opacity="0.75">
@@ -54,6 +55,7 @@
   <g fill="#6fa83a">
     <circle cx="240" cy="404" r="6"/><circle cx="222" cy="440" r="5"/><circle cx="246" cy="370" r="4"/>
     <circle cx="130" cy="384" r="6"/><circle cx="30" cy="404" r="5"/><circle cx="196" cy="498" r="6"/>
+  </g>
   </g>
 
   <!-- Kurt in his cannonball tuck, climbing nose-up (geometry from src/kurt.js, R = 100),
