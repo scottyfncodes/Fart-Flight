@@ -97,8 +97,6 @@ export function createGame(canvas, stageEl) {
   let shake = { t: 0, dur: 0.001, mag: 0 };
   let idleTapTimer = 1.4;
   let fartTickTimer = 0;
-  // seconds until a fart is allowed to say "FfffKurt!" again
-  let ffffCooldown = 0;
   const wardrobe = createWardrobe();
   // brief grace after the shield pops so Kurt can clear what he hit
   let invuln = 0;
@@ -153,7 +151,6 @@ export function createGame(canvas, stageEl) {
     resetKurt(kurt, worldW * PHYSICS.kurtX, idleY(), currentCosmetic());
     scrollSpeed = SCROLL.baseSpeed;
     shownGradeIndex = 0;
-    ffffCooldown = rand(3, 6);
     invuln = 0;
     hitStop = 0;
     slowMo = 0;
@@ -348,13 +345,6 @@ export function createGame(canvas, stageEl) {
   // a new fart gets Kurt's next reaction, voiced to match his face
   function startThrust() {
     const reaction = beginThrust(kurt, getActiveModifiers(powerupField).thrustMult);
-    if (ffffCooldown <= 0 && Math.random() < 0.2) {
-      ffffCooldown = rand(7, 14);
-      audio.playFfffKurt();
-      const butt = getButtPosition(kurt);
-      popText(fx, butt.x - 10, butt.y - 24, "FfffKURT!", { color: "#9be07a", size: 26, life: 1.3, rise: 50 });
-      return;
-    }
     if (reaction) audio.playReaction(reaction);
   }
 
@@ -418,7 +408,6 @@ export function createGame(canvas, stageEl) {
     ) * mods.speedMult;
 
     updateKurt(kurt, dt, mods.gravityMult, scrollSpeed, mods.thrustMult);
-    ffffCooldown -= dt;
 
     if (kurt.thrusting) {
       fartTickTimer -= dt;
