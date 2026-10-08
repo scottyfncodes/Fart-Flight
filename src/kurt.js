@@ -165,9 +165,12 @@ export function getButtPosition(kurt) {
 const SKIN = "#f4c9a0";
 const SKIN_SHADE = "#e0a97c";
 const OUTLINE = "rgba(120,66,38,0.55)";
-const HAIR_BASE = "#4a2f1c";
-const HAIR_HI = "#7a4f2f";
+const HAIR_BASE = "#5a3b24";
+const HAIR_HI = "#8a6242";
 const MUSTACHE = "#5b3a24";
+// short, full beard: brown through the cheeks, going grey at the chin
+const BEARD = "#8c7a66";
+const BEARD_GREY = "#d2cbc0";
 
 export function drawKurt(ctx, kurt) {
   const R = PHYSICS.kurtRadius;
@@ -196,8 +199,8 @@ export function drawKurt(ctx, kurt) {
 
   drawShortHairCap(ctx, R);
 
-  // a subtle hint of forehead shine, well short of a bald patch
-  ctx.fillStyle = "rgba(255,255,255,0.09)";
+  // shine on that high forehead
+  ctx.fillStyle = "rgba(255,255,255,0.14)";
   ctx.beginPath();
   ctx.ellipse(R * 0.1, -R * 0.42, R * 0.13, R * 0.08, -0.2, 0, Math.PI * 2);
   ctx.fill();
@@ -247,8 +250,11 @@ export function drawKurt(ctx, kurt) {
     ctx.fill();
   }
 
+  drawBeard(ctx, R);
+
   drawEye(ctx, R * 0.16, eyeY, R, kurt.blinking, expr);
   drawEyebrow(ctx, R, R * 0.16, eyeY, expr);
+  if (expr === "happy" || expr === "giggles") drawCrowsFeet(ctx, R, R * 0.16, eyeY);
 
   ctx.fillStyle = MUSTACHE;
   ctx.beginPath();
@@ -521,15 +527,15 @@ function drawShortHairCap(ctx, R) {
   // strands you'd need physics for
   ctx.fillStyle = HAIR_BASE;
   ctx.beginPath();
-  ctx.moveTo(R * 0.22, -R * 0.5);
-  ctx.quadraticCurveTo(R * 0.1, -R * 0.72, -R * 0.24, -R * 0.64);
+  ctx.moveTo(R * 0.04, -R * 0.57);
+  ctx.quadraticCurveTo(-R * 0.06, -R * 0.72, -R * 0.26, -R * 0.64);
   ctx.quadraticCurveTo(-R * 0.6, -R * 0.52, -R * 0.58, -R * 0.12);
-  ctx.quadraticCurveTo(-R * 0.56, R * 0.14, -R * 0.36, R * 0.22);
-  // receded at the temple, then a widow's-peak dip back down toward the
-  // brow before receding again on the other side
-  ctx.quadraticCurveTo(-R * 0.14, R * 0.02, R * 0.02, -R * 0.14);
-  ctx.quadraticCurveTo(R * 0.12, -R * 0.28, R * 0.1, -R * 0.38);
-  ctx.quadraticCurveTo(R * 0.18, -R * 0.46, R * 0.22, -R * 0.5);
+  ctx.quadraticCurveTo(-R * 0.56, R * 0.14, -R * 0.38, R * 0.2);
+  // sideburn up into a deeply receded temple, then a short tuft reaching
+  // forward on top, leaving a high, bare forehead
+  ctx.quadraticCurveTo(-R * 0.3, R * 0.0, -R * 0.22, -R * 0.16);
+  ctx.quadraticCurveTo(-R * 0.12, -R * 0.32, -R * 0.04, -R * 0.42);
+  ctx.quadraticCurveTo(R * 0.02, -R * 0.5, R * 0.04, -R * 0.57);
   ctx.closePath();
   ctx.fill();
   ctx.strokeStyle = OUTLINE;
@@ -544,10 +550,63 @@ function drawShortHairCap(ctx, R) {
   ctx.quadraticCurveTo(-R * 0.3, -R * 0.4, -R * 0.34, -R * 0.2);
   ctx.stroke();
   ctx.beginPath();
-  ctx.moveTo(-R * 0.16, -R * 0.6);
-  ctx.quadraticCurveTo(-R * 0.06, -R * 0.44, -R * 0.1, -R * 0.26);
+  ctx.moveTo(-R * 0.18, -R * 0.6);
+  ctx.quadraticCurveTo(-R * 0.1, -R * 0.48, -R * 0.18, -R * 0.32);
   ctx.stroke();
   ctx.globalAlpha = 1;
+}
+
+function drawBeard(ctx, R) {
+  // from the sideburn, along the jaw, round a full chin and up to the
+  // mouth corner, then back along the cheek under the mustache
+  ctx.beginPath();
+  ctx.moveTo(-R * 0.4, R * 0.08);
+  ctx.quadraticCurveTo(-R * 0.36, R * 0.46, -R * 0.04, R * 0.58);
+  ctx.quadraticCurveTo(R * 0.3, R * 0.7, R * 0.5, R * 0.5);
+  ctx.quadraticCurveTo(R * 0.58, R * 0.36, R * 0.52, R * 0.24);
+  ctx.quadraticCurveTo(R * 0.3, R * 0.3, R * 0.12, R * 0.24);
+  ctx.quadraticCurveTo(-R * 0.08, R * 0.3, -R * 0.24, R * 0.12);
+  ctx.quadraticCurveTo(-R * 0.32, R * 0.04, -R * 0.4, R * 0.08);
+  ctx.closePath();
+  ctx.fillStyle = BEARD;
+  ctx.fill();
+
+  ctx.save();
+  ctx.clip();
+  // the grey comes in thickest on the chin
+  ctx.fillStyle = BEARD_GREY;
+  ctx.globalAlpha = 0.85;
+  ctx.beginPath();
+  ctx.ellipse(R * 0.24, R * 0.6, R * 0.26, R * 0.13, -0.3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = BEARD_GREY;
+  ctx.lineWidth = 1.2;
+  ctx.lineCap = "round";
+  ctx.globalAlpha = 0.4;
+  for (const [x, y] of [[-0.24, 0.3], [-0.1, 0.46], [0.02, 0.38], [-0.3, 0.16]]) {
+    ctx.beginPath();
+    ctx.moveTo(R * x, R * y);
+    ctx.lineTo(R * (x + 0.02), R * (y + 0.04));
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  ctx.strokeStyle = OUTLINE;
+  ctx.lineWidth = 1.4;
+  ctx.stroke();
+}
+
+function drawCrowsFeet(ctx, R, ex, ey) {
+  // smile lines fanning back from the outer corner of the eye
+  ctx.strokeStyle = "rgba(120,70,40,0.45)";
+  ctx.lineWidth = 1.1;
+  ctx.lineCap = "round";
+  for (const a of [-0.35, 0, 0.35]) {
+    ctx.beginPath();
+    ctx.moveTo(ex - R * 0.16, ey + R * 0.02);
+    ctx.lineTo(ex - R * 0.16 - Math.cos(a) * R * 0.08, ey + R * 0.02 + Math.sin(a) * R * 0.08);
+    ctx.stroke();
+  }
 }
 
 function drawEyebrow(ctx, R, ex, eyeY, expr) {
@@ -654,11 +713,24 @@ function drawMouth(ctx, R, expr) {
     ctx.quadraticCurveTo(mx, R * 0.37, mx + R * 0.1, R * 0.4);
     ctx.stroke();
   } else {
-    ctx.strokeStyle = "#5b3a24";
-    ctx.lineWidth = R * 0.06;
-    ctx.lineCap = "round";
+    // his everyday big, toothy grin
+    ctx.fillStyle = "#7a2020";
     ctx.beginPath();
-    ctx.arc(mx, R * 0.4, R * 0.13, Math.PI * 0.2, Math.PI * 0.8);
+    ctx.moveTo(mx - R * 0.16, R * 0.3);
+    ctx.quadraticCurveTo(mx, R * 0.26, mx + R * 0.18, R * 0.29);
+    ctx.quadraticCurveTo(mx + R * 0.12, R * 0.44, mx - R * 0.01, R * 0.44);
+    ctx.quadraticCurveTo(mx - R * 0.13, R * 0.42, mx - R * 0.16, R * 0.3);
+    ctx.closePath();
+    ctx.fill();
+    ctx.save();
+    ctx.clip();
+    ctx.fillStyle = "#fff";
+    ctx.beginPath();
+    ctx.ellipse(mx + R * 0.01, R * 0.3, R * 0.16, R * 0.045, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    ctx.strokeStyle = OUTLINE;
+    ctx.lineWidth = 1.4;
     ctx.stroke();
   }
 }
