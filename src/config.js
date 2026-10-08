@@ -132,12 +132,12 @@ export const DIGNITY = {
   nearMissDistance: 16,
   // dignity seeps away as Kurt flies, faster the farther he gets:
   // points lost per meter = drainBase + meters * drainGrowth
-  // Kurt flies ~4 m/s, so that's about 15 dignity a second at the start and
-  // ~30 by 1000m: on his own he'd be naked in about 6 seconds. Clean
+  // Kurt flies ~4 m/s, so that's about 11 dignity a second at the start and
+  // ~22 by 1000m: on his own he'd be naked in about 8 seconds. Clean
   // passes, snacks and clothing pickups pull it back, so his clothes are
   // always coming off and going back on.
-  drainBase: 4.0,
-  drainGrowth: 0.0024,
+  drainBase: 3.0,
+  drainGrowth: 0.0018,
   // dignity earned back for flying clean: every gap passed without a
   // near-miss, plus a bonus every 5 in a row
   cleanPassGain: 2,
