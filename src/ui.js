@@ -1,4 +1,5 @@
-import { COSMETICS } from "./config.js";
+import { COSMETICS, PHYSICS } from "./config.js";
+import { createKurt, resetKurt, drawKurt } from "./kurt.js";
 
 const els = {};
 let gradeToastTimer = null;
@@ -14,15 +15,31 @@ const OVER_TITLES = [
   "Tooted and booted.",
 ];
 
-const COSMETIC_ICONS = {
-  classic: "💨",
-  business: "👔",
-  cowboy: "🤠",
-  viking: "🪓",
-  disco: "🕺",
-  greek: "🌿",
-  astro: "👨‍🚀",
-};
+// each cosmetic chip is a head-and-shoulders portrait of Kurt in that
+// outfit, drawn with the real in-game renderer so the picker always
+// matches what you fly
+const PORTRAIT_PX = 36;
+const portraitKurt = createKurt();
+
+function drawCosmeticPortrait(cosmetic) {
+  const dpr = Math.min(window.devicePixelRatio || 1, 3);
+  const canvas = document.createElement("canvas");
+  canvas.className = "cosmetic-portrait";
+  canvas.width = Math.round(PORTRAIT_PX * dpr);
+  canvas.height = Math.round(PORTRAIT_PX * dpr);
+  canvas.setAttribute("aria-hidden", "true");
+  const ctx = canvas.getContext("2d");
+  const R = PHYSICS.kurtRadius;
+  resetKurt(portraitKurt, 0, 0, cosmetic);
+  portraitKurt.blinking = false;
+  const scale = (PORTRAIT_PX * dpr) / (R * 2.5);
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.scale(scale, scale);
+  // frame the head (plus any hat) rather than the whole tucked body
+  ctx.translate(-R * 0.1, R * 0.5);
+  drawKurt(ctx, portraitKurt);
+  return canvas;
+}
 
 export function initUI(handlers) {
   els.start = document.getElementById("start-screen");
@@ -119,7 +136,7 @@ export function renderCosmeticRow(selectedId, bestMeters, onSelect) {
     chip.type = "button";
     chip.className = "cosmetic-chip" + (c.id === selectedId ? " selected" : "") + (unlocked ? "" : " locked");
     chip.setAttribute("aria-label", c.name + (unlocked ? "" : " (locked)"));
-    chip.innerHTML = `<span>${COSMETIC_ICONS[c.id] || "💨"}</span>${unlocked ? "" : '<span class="lock-badge">🔒</span>'}`;
+    chip.appendChild(drawCosmeticPortrait(c));
     if (unlocked) {
       chip.addEventListener("click", () => onSelect(c.id));
     } else {
