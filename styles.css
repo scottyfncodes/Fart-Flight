@@ -247,7 +247,17 @@ html, body {
   text-shadow: 0 3px 0 var(--ink);
 }
 #ready-prompt.hidden { display: none; }
-.ready-hand { font-size: 44px; -webkit-text-stroke: 0; text-shadow: none; animation: press 0.9s ease-in-out infinite; }
+/* a fingertip pressing down, drawn in the HUD's ink-outlined cartoon style */
+.ready-hand {
+  width: 34px;
+  height: 34px;
+  margin: 0 auto 8px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--ink);
+  box-shadow: 0 3px 0 var(--ink), 0 0 0 6px rgba(255,255,255,0.45);
+  animation: press 0.9s ease-in-out infinite;
+}
 .ready-main { font-size: 34px; letter-spacing: 2px; }
 .ready-sub { font-size: 16px; letter-spacing: 2px; opacity: 0.9; }
 @keyframes press {
@@ -400,7 +410,8 @@ html, body {
 .cosmetic-chip.selected { border-color: var(--accent); background: #fff; transform: scale(1.1); }
 .cosmetic-chip { transition: transform 0.12s ease; }
 .cosmetic-chip.locked { filter: grayscale(1) brightness(0.75); cursor: default; }
-.cosmetic-chip .lock-badge { position: absolute; bottom: -2px; right: -2px; font-size: 10px; }
+.cosmetic-chip { overflow: hidden; padding: 0; }
+.cosmetic-portrait { width: 36px; height: 36px; display: block; pointer-events: none; }
 
 /* ---------- Game over ---------- */
 
