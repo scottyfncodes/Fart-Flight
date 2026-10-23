@@ -204,6 +204,7 @@ export function createGame(canvas, stageEl) {
     audio.startWind();
     audio.setMusicIntensity(1, 0);
     storage.addRun();
+    window.pulse?.("game_start");
     startThrust();
     fartTickTimer = 0;
     fartTick(0.9);
@@ -301,6 +302,7 @@ export function createGame(canvas, stageEl) {
   function revealGameOver() {
     setState("gameover");
     const { grade, prevBest, isNewBest, unlocked } = lastRun;
+    window.pulse?.("game_complete", { result: "lose", grade: grade.code, new_best: isNewBest });
     const cause = choose(DEATH_CAUSES[deathInfo.cause] || DEATH_CAUSES.ground);
     ui.showGameOver(
       {

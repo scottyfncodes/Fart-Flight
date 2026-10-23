@@ -104,3 +104,7 @@ it's available offline.
 Everything renders to a single `<canvas>` using `requestAnimationFrame` with
 delta-time, except the start/HUD/game-over chrome, which is plain DOM updated
 only on state changes.
+
+## Analytics
+
+The page loads the HaveAnApp Pulse snippet (`index.html`), which counts page views and two events, `game_start` and `game_complete` (with the grade reached). It uses no cookies, stores nothing on the device, and sends no personal data. Visits from `localhost` are ignored. To leave your own device out of the counts, open the game once with `?pulse=ignore` on the address.
