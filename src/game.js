@@ -1,5 +1,5 @@
 import { PHYSICS, SCROLL, DIGNITY, COSMETICS, WORLD, POWERUPS } from "./config.js";
-import { clamp, rand, choose } from "./utils.js";
+import { clamp, rand, choose, reducedMotion } from "./utils.js";
 import * as audio from "./audio.js";
 import { storage } from "./storage.js";
 import {
@@ -211,6 +211,7 @@ export function createGame(canvas, stageEl) {
   }
 
   function triggerShake(dur, mag) {
+    if (reducedMotion()) mag *= 0.35;
     if (shake.t > 0 && shake.mag * (shake.t / shake.dur) > mag) return;
     shake = { t: dur, dur, mag };
   }

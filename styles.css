@@ -125,10 +125,10 @@ html, body {
   pointer-events: auto;
   font-family: var(--font-display);
   font-size: 15px;
-  width: 36px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   background: rgba(255,255,255,0.82);
   color: var(--ink);
   box-shadow: 0 2px 0 rgba(0,0,0,0.15);
@@ -156,7 +156,7 @@ html, body {
   width: max-content;
 }
 
-#dignity-label { font-size: 10px; letter-spacing: 1px; opacity: 0.75; }
+#dignity-label { font-size: 12px; letter-spacing: 1px; opacity: 0.8; }
 
 #dignity-bar {
   width: 90px;
@@ -180,7 +180,7 @@ html, body {
   padding: 5px 10px;
   border-radius: 8px;
   width: max-content;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.5px;
 }
 #powerup-indicator.hidden { display: none; }
@@ -210,7 +210,7 @@ html, body {
 }
 #grade-toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 #grade-toast.hidden { display: none; }
-.toast-label { font-size: 11px; letter-spacing: 3px; color: var(--accent); }
+.toast-label { font-size: 12px; letter-spacing: 3px; color: var(--accent); }
 .toast-code { font-size: 40px; line-height: 1.1; }
 .toast-name { font-size: 14px; letter-spacing: 1px; margin-top: 2px; }
 
@@ -358,7 +358,7 @@ html, body {
   margin-top: 6px;
 }
 .meta-stat { display: flex; flex-direction: column; }
-.meta-label { font-size: 10px; letter-spacing: 1.5px; opacity: 0.6; font-family: var(--font-display); }
+.meta-label { font-size: 12px; letter-spacing: 1px; opacity: 0.65; font-family: var(--font-display); }
 #meta-best, #meta-grade, #meta-farts { font-family: var(--font-display); font-size: 22px; color: var(--ink); }
 .toggle-row { display: flex; gap: 8px; justify-content: center; }
 #cosmetic-name { font-family: var(--font-display); font-size: 14px; letter-spacing: 1px; color: var(--ink); opacity: 0.75; margin-top: -4px; }
@@ -372,13 +372,14 @@ html, body {
   border: none;
   border-radius: 20px;
   padding: 8px 16px;
+  min-height: 44px;
   color: var(--ink);
   cursor: pointer;
   touch-action: manipulation;
 }
 
 .howto {
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.5px;
   color: rgba(11,18,32,0.55);
   margin-top: 4px;
@@ -491,11 +492,11 @@ html, body {
   display: flex;
   flex-direction: column;
 }
-.stat-label { font-family: var(--font-display); font-size: 9px; letter-spacing: 1px; opacity: 0.55; }
+.stat-label { font-family: var(--font-display); font-size: 12px; letter-spacing: 0.5px; opacity: 0.6; }
 .stat-value { font-family: var(--font-display); font-size: 20px; color: var(--ink); padding-top: 3px; }
 
 #dignity-quip {
-  font-size: 11px;
+  font-size: 12px;
   font-style: italic;
   color: rgba(11,18,32,0.6);
   margin: -2px 0 2px 0;
