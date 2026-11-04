@@ -372,6 +372,7 @@ html, body {
   border: none;
   border-radius: 20px;
   padding: 8px 16px;
+  min-height: 44px;
   color: var(--ink);
   cursor: pointer;
   touch-action: manipulation;
