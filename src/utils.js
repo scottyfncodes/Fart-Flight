@@ -1,3 +1,8 @@
+// players who ask their OS for less motion still get the crash shake and flashes, just gentler
+export function reducedMotion() {
+  return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+}
+
 export function clamp(v, lo, hi) {
   return v < lo ? lo : v > hi ? hi : v;
 }

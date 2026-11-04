@@ -1,4 +1,4 @@
-import { rand, choose } from "./utils.js";
+import { rand, choose, reducedMotion } from "./utils.js";
 
 // Canvas-side juice that isn't a fart particle: floating callouts, screen
 // flashes, confetti, speed lines, and the dizzy stars after a crash.
@@ -24,6 +24,7 @@ export function popText(fx, x, y, text, { color = "#fff", size = 22, life = 0.9,
 }
 
 export function flash(fx, strength = 0.8, color = "#fff") {
+  if (reducedMotion()) strength *= 0.4;
   fx.flash = Math.max(fx.flash, strength);
   fx.flashColor = color;
 }
